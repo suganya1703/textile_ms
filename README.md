@@ -164,6 +164,39 @@ The buyer tracking page and Roll Passport page are public.
 
 ---
 
+## Testing Roll Passport QR on Mobile Phone (Same WiFi)
+
+Loomdo's Roll Passport is designed to run 100% offline over your local area network (LAN) without needing internet, external APIs or cloud services.
+
+### 1. Network Accessibility
+The Vite frontend server is configured with `host: true` in `frontend/vite.config.js`, making it accessible to any device on your local WiFi network. FastAPI backend CORS allows all LAN origins, and API requests use relative `/api` paths.
+
+### 2. Configure `public_base_url` in Settings
+1. Open Loomdo in your browser (`http://localhost:5173`).
+2. Navigate to **Settings** &rarr; **Roll Passport QR & Network**.
+3. Loomdo automatically queries your machine's active network IP (via `GET /api/settings/lan-ip`).
+4. Click the helper button: **"Use this computer's network address (<LAN_IP>)"** (for example, `http://192.168.1.20:5173`).
+5. Click **Save**.
+
+### 3. Scan & Verify with your Phone
+1. Connect your smartphone to the **same WiFi network** as your computer.
+2. Open your smartphone's camera or QR reader.
+3. Aim at any Roll Passport QR code:
+   - On the **Quality Control** page (click **Trace** on any roll).
+   - In the **Quality Control** table (click **Label** to view/print the 4&times;2" sticker).
+   - On the **Dispatch** page roll list (click **Label**).
+4. Tap the link (`http://<LAN_IP>:5173/passport/<roll_code>`).
+5. The public **Roll Passport** loads instantly on your phone with zero login required, displaying the roll's complete provenance:
+   - Yarn batch arrival and supplier
+   - Order specifications and buyer
+   - Weaving machine, operator and shift
+   - ASTM 4-point perch inspection flaw scores and grade
+   - Warehouse dispatch status and invoice details
+   - Manufacturing cost breakdown (yarn + overhead)
+6. If an invalid roll code is accessed, a friendly "Roll Not Found" screen appears with a roll search bar.
+
+---
+
 ## Validation rules
 
 Enforced in both the backend and the frontend:
