@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  RefreshCw
+  RefreshCw,
+  QrCode,
+  Camera
 } from 'lucide-react';
 import {
   Card,
@@ -14,11 +16,14 @@ import {
   useToast
 } from '../components/common';
 import { api } from '../api/client';
+import { RollScannerModal } from '../components/common/RollScannerModal';
 
-export function FloorMapView() {
+export function FloorMapView({ onNavigate, onOpenRollPassport }) {
   const [floorData, setFloorData] = useState(null);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [quickRollCode, setQuickRollCode] = useState('');
   const { showToast } = useToast();
 
   const loadFloor = async () => {
@@ -123,10 +128,66 @@ export function FloorMapView() {
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Live • 5 s
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsScannerOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#714B67] hover:bg-[#5B3B52] rounded-lg transition-colors shadow-xs cursor-pointer"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            Scan QR
+          </button>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live • 5 s
+          </div>
         </div>
+      </div>
+
+      {/* Quick Roll Code / QR Scanner Bar */}
+      <div className="p-3.5 bg-white rounded-[12px] border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-purple-50 text-[#714B67] flex items-center justify-center shrink-0">
+            <QrCode className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#111827]">Scan QR / Enter Roll Code</span>
+            <p className="text-[11px] text-[#6B7280]">Inspect ASTM 4-point grading and full roll pedigree</p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (quickRollCode.trim()) {
+              if (onOpenRollPassport) onOpenRollPassport(quickRollCode.trim());
+              else if (onNavigate) onNavigate('passport');
+            }
+          }}
+          className="flex items-center gap-2 w-full sm:w-auto"
+        >
+          <input
+            type="text"
+            value={quickRollCode}
+            onChange={(e) => setQuickRollCode(e.target.value)}
+            placeholder="e.g. ROLL-20261001-0001"
+            className="flex-1 sm:w-60 font-mono text-xs bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3 py-1.5 text-[#111827] focus:outline-none focus:border-[#714B67]"
+          />
+          <button
+            type="button"
+            onClick={() => setIsScannerOpen(true)}
+            className="px-2.5 py-1.5 text-xs font-semibold text-[#714B67] bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-[8px] transition-colors cursor-pointer shrink-0"
+          >
+            Camera
+          </button>
+          <button
+            type="submit"
+            disabled={!quickRollCode.trim()}
+            className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#714B67] hover:bg-[#5B3B52] disabled:opacity-50 rounded-[8px] transition-colors cursor-pointer shrink-0"
+          >
+            Open
+          </button>
+        </form>
       </div>
 
       {/* Legend: green Running, amber Idle, red Breakdown, 'Click a machine to inspect' */}
@@ -264,6 +325,16 @@ export function FloorMapView() {
           </Card>
         </div>
       </div>
+
+      {/* Roll Scanner Modal */}
+      <RollScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onSelectRoll={(code) => {
+          if (onOpenRollPassport) onOpenRollPassport(code);
+          else if (onNavigate) onNavigate('passport');
+        }}
+      />
     </div>
   );
 }

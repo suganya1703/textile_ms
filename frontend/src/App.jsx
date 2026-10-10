@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastProvider, useToast } from './components/common/Toast';
 import { AppLayout } from './components/layout/AppLayout';
 
@@ -32,14 +32,46 @@ function AppContent() {
     const savedRole = localStorage.getItem('loomdo_role');
     return ROLE_MAP[savedRole] || DEMO_ROLES[0];
   });
+
+  const getInitialPathRoll = () => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/passport/')) {
+      return decodeURIComponent(window.location.pathname.replace(/^\/passport\/?/, '').split('/')[0] || '');
+    }
+    return '';
+  };
+
+  const [selectedPassportRoll, setSelectedPassportRoll] = useState(() => {
+    return getInitialPathRoll() || 'ROLL-20261001-0001';
+  });
+
   const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/passport')) {
+      return 'passport';
+    }
     const savedRole = localStorage.getItem('loomdo_role');
     const role = ROLE_MAP[savedRole] || DEMO_ROLES[0];
     return role.defaultTab || 'dashboard';
   });
+
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState('ORD-2026-001');
-  const [selectedPassportRoll, setSelectedPassportRoll] = useState('ROLL-20261001-0001');
   const { showToast } = useToast();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/passport')) {
+        const code = decodeURIComponent(path.replace(/^\/passport\/?/, '').split('/')[0] || '');
+        if (code) setSelectedPassportRoll(code);
+        setActiveTab('passport');
+      } else if (path.startsWith('/track/')) {
+        const ref = decodeURIComponent(path.replace(/^\/track\/?/, '').split('/')[0] || '');
+        if (ref) setSelectedTrackingOrder(ref);
+        setActiveTab('tracking');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleLogin = (role) => {
     const targetRole = role || DEMO_ROLES[0];
@@ -72,11 +104,51 @@ function AppContent() {
   };
 
   const handleOpenPassport = (rollNumber) => {
-    setSelectedPassportRoll(rollNumber || 'ROLL-20261001-0001');
+    const code = rollNumber || 'ROLL-20261001-0001';
+    setSelectedPassportRoll(code);
     setActiveTab('passport');
+    if (window.history.pushState) {
+      window.history.pushState({}, '', `/passport/${encodeURIComponent(code)}`);
+    }
   };
 
-  // Standalone view renders (NO sidebar, per design rules)
+  // 1. PUBLIC ROLL PASSPORT: Accessible directly without login via URL /passport/<roll_code>
+  const isPassportRoute = activeTab === 'passport' || (typeof window !== 'undefined' && window.location.pathname.startsWith('/passport'));
+  if (isPassportRoute) {
+    return (
+      <RollPassportView
+        rollNumber={selectedPassportRoll}
+        isPublic={!isAuthenticated}
+        onBack={() => {
+          if (isAuthenticated) {
+            setActiveTab('quality');
+          } else {
+            setActiveTab('landing');
+          }
+          if (window.history.pushState) {
+            window.history.pushState({}, '', '/');
+          }
+        }}
+      />
+    );
+  }
+
+  // 2. PUBLIC ORDER TRACKING
+  if (activeTab === 'tracking') {
+    return (
+      <PublicTrackingView
+        initialOrderNumber={selectedTrackingOrder}
+        onBack={() => {
+          setActiveTab(isAuthenticated ? 'orders' : 'landing');
+          if (window.history.pushState) {
+            window.history.pushState({}, '', '/');
+          }
+        }}
+      />
+    );
+  }
+
+  // 3. UNAUTHENTICATED USERS: Login screen
   if (!isAuthenticated || activeTab === 'landing') {
     return (
       <LoginLandingView
@@ -87,33 +159,17 @@ function AppContent() {
     );
   }
 
-  if (activeTab === 'tracking') {
-    return (
-      <PublicTrackingView
-        initialOrderNumber={selectedTrackingOrder}
-        onBack={() => setActiveTab(isAuthenticated ? 'orders' : 'landing')}
-      />
-    );
-  }
-
-  if (activeTab === 'passport') {
-    return (
-      <RollPassportView
-        rollNumber={selectedPassportRoll}
-        onBack={() => setActiveTab(isAuthenticated ? 'quality' : 'landing')}
-      />
-    );
-  }
-
+  // 4. OPERATOR MOBILE TOUCH MODE
   if (activeTab === 'floor-mode') {
     return (
       <MobileFloorModeView
         onBack={() => setActiveTab('production')}
+        onOpenRollPassport={handleOpenPassport}
       />
     );
   }
 
-  // Standard 11-module shell with sidebar
+  // 5. STANDARD 11-MODULE SHELL WITH SIDEBAR
   return (
     <AppLayout
       activeTab={activeTab}
@@ -133,7 +189,7 @@ function AppContent() {
       {activeTab === 'workforce' && <WorkforceView />}
       {activeTab === 'costing' && <CostingView />}
       {activeTab === 'insights' && <InsightsView />}
-      {activeTab === 'floormap' && <FloorMapView onNavigate={setActiveTab} />}
+      {activeTab === 'floormap' && <FloorMapView onNavigate={setActiveTab} onOpenRollPassport={handleOpenPassport} />}
       {activeTab === 'settings' && <SettingsView />}
     </AppLayout>
   );

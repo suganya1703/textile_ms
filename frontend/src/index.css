@@ -150,4 +150,49 @@ table, .tabular-nums, input[type="number"], .font-mono {
   .print-only {
     display: block !important;
   }
+
+  /* 4x2 inch thermal label print mode */
+  body.printing-labels-active {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body.printing-labels-active * {
+    visibility: hidden;
+  }
+  body.printing-labels-active #loomdo-label-print-portal,
+  body.printing-labels-active #loomdo-label-print-portal * {
+    visibility: visible;
+  }
+  body.printing-labels-active #loomdo-label-print-portal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4in;
+    margin: 0;
+    padding: 0;
+    display: block !important;
+  }
+  body.printing-labels-active .label-sticker-4x2 {
+    width: 4in !important;
+    height: 2in !important;
+    max-width: 4in !important;
+    max-height: 2in !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 6px 10px !important;
+    border: none !important;
+    background: white !important;
+    overflow: hidden !important;
+    display: flex !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: 4in 2in;
+    margin: 0;
+  }
 }

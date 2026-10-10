@@ -15,6 +15,7 @@ import { api } from '../api/client';
 
 export function SettingsView() {
   const [settings, setSettings] = useState({});
+  const [lanInfo, setLanInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
   const { showToast } = useToast();
@@ -24,6 +25,15 @@ export function SettingsView() {
       setLoading(true);
       const setRes = await api.getSettings();
       setSettings(setRes || {});
+      try {
+        const lan = await api.getLanIp();
+        setLanInfo(lan);
+      } catch (e) {
+        setLanInfo({
+          lan_ip: window.location.hostname,
+          suggested_url: `http://${window.location.hostname}:5173`
+        });
+      }
     } catch (err) {
       showToast('Failed to load settings: ' + err.message, 'error');
     } finally {
@@ -137,7 +147,60 @@ export function SettingsView() {
           </CardContent>
         </Card>
 
-        {/* 2. Grading */}
+        {/* 2. Roll Passport QR & Network */}
+        <Card>
+          <CardHeader
+            title="Roll Passport QR & Network"
+            subtitle="Configure target URL for QR codes to enable phone scanning over local WiFi"
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={savingKey?.includes('public_base_url')}
+                onClick={() => handleSaveGroup(['public_base_url'])}
+              >
+                Save
+              </Button>
+            }
+          />
+          <CardContent className="space-y-4 pt-1">
+            <div>
+              <div className="flex items-baseline justify-between mb-1">
+                <code className="font-mono text-xs font-semibold text-[#111827]">public_base_url</code>
+                <span className="text-xs text-[#6B7280]">Target URL encoded in QR labels</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={settings.public_base_url?.value || 'http://localhost:5173'}
+                  onChange={(e) => handleInputChange('public_base_url', e.target.value)}
+                  placeholder="e.g. http://192.168.1.20:5173"
+                  className="flex-1 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                />
+                {lanInfo && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      handleInputChange('public_base_url', lanInfo.suggested_url);
+                      showToast(`Set to network address: ${lanInfo.suggested_url}`, 'info');
+                    }}
+                    className="whitespace-nowrap text-xs"
+                  >
+                    Use this computer's network address ({lanInfo.lan_ip})
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-[#6B7280] mt-1.5">
+                Each roll QR code encodes <code className="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">&lt;BASE_URL&gt;/passport/&lt;roll_code&gt;</code>.
+                Set to your machine's LAN IP address so any smartphone connected to the same mill WiFi can scan and view passports without requiring login.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 3. Grading */}
         <Card>
           <CardHeader
             title="Grading"
@@ -349,7 +412,55 @@ export function SettingsView() {
           </CardContent>
         </Card>
 
-        {/* 6. Odoo CSV Export */}
+        {/* 6. Roll Passport QR & Network */}
+        <Card>
+          <CardHeader
+            title="Roll Passport QR & Network"
+            subtitle="Configure base URL for public QR codes across mill and mobile WiFi devices"
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={savingKey?.includes('public_base_url')}
+                onClick={() => handleSaveGroup(['public_base_url'])}
+              >
+                Save
+              </Button>
+            }
+          />
+          <CardContent className="space-y-4 pt-1">
+            <div>
+              <div className="flex items-baseline justify-between mb-1">
+                <code className="font-mono text-xs font-semibold text-[#111827]">public_base_url</code>
+                <span className="text-xs text-[#6B7280]">QR Target Host Address</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={settings.public_base_url?.value || 'http://localhost:5173'}
+                  onChange={(e) => handleInputChange('public_base_url', e.target.value)}
+                  placeholder="http://localhost:5173"
+                  className="flex-1 font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                />
+                {lanInfo?.suggested_url && (
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('public_base_url', lanInfo.suggested_url)}
+                    className="px-3.5 py-2 text-xs font-semibold text-[#714B67] bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-[8px] transition-colors shrink-0 cursor-pointer"
+                  >
+                    Use this computer's network address ({lanInfo.lan_ip})
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-[#6B7280] mt-1.5">
+                Every generated Roll Passport QR code encodes <code className="font-mono text-[#714B67]">{settings.public_base_url?.value || 'http://localhost:5173'}/passport/&lt;roll_code&gt;</code>.
+                When testing on phones connected to the same WiFi, set this to your computer's LAN IP address.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 7. Odoo CSV Export */}
         <Card>
           <CardHeader
             title="Odoo CSV Export"

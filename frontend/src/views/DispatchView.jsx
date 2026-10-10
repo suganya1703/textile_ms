@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   RefreshCw,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Printer,
+  QrCode
 } from 'lucide-react';
 import {
   Card,
@@ -21,6 +23,7 @@ import {
   useToast
 } from '../components/common';
 import { api } from '../api/client';
+import { PrintLabelsModal } from '../components/common/RollLabel';
 
 export function DispatchView() {
   const [activeTab, setActiveTab] = useState('Dispatch Rolls'); // 'Dispatch Rolls' or 'Finished Stock'
@@ -45,15 +48,21 @@ export function DispatchView() {
   const [overrideReason, setOverrideReason] = useState('');
   const [submittingDispatch, setSubmittingDispatch] = useState(false);
 
+  const [settings, setSettings] = useState({});
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [rollsToPrint, setRollsToPrint] = useState([]);
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const [stockRes, buyRes] = await Promise.all([
+      const [stockRes, buyRes, setRes] = await Promise.all([
         api.getFinishedStock(),
-        api.getBuyers()
+        api.getBuyers(),
+        api.getSettings().catch(() => ({}))
       ]);
       setFinishedStock(stockRes);
       setBuyers(buyRes || []);
+      setSettings(setRes || {});
 
       if (buyRes?.length > 0 && !selectedBuyerId) {
         setSelectedBuyerId(buyRes[0].id);
@@ -245,6 +254,24 @@ export function DispatchView() {
         <span className="font-mono tabular-nums text-[#111827]">
           {formatINR(r.order_price_per_m || 130)}
         </span>
+      )
+    },
+    {
+      header: 'Passport',
+      accessor: 'id',
+      align: 'right',
+      render: (r) => (
+        <button
+          onClick={() => {
+            setRollsToPrint([r]);
+            setIsPrintModalOpen(true);
+          }}
+          className="flex items-center gap-1 text-xs text-[#714B67] hover:bg-purple-50 px-2 py-1 rounded border border-purple-200 transition-colors cursor-pointer"
+          title="Print 4x2 QR Passport Label"
+        >
+          <QrCode className="w-3.5 h-3.5" />
+          Label
+        </button>
       )
     }
   ];
@@ -476,6 +503,14 @@ export function DispatchView() {
           </CardContent>
         </Card>
       )}
+
+      {/* 4x2 Label Print Modal */}
+      <PrintLabelsModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        rolls={rollsToPrint}
+        baseUrl={settings.public_base_url?.value || window.location.origin || 'http://localhost:5173'}
+      />
     </div>
   );
 }

@@ -54,6 +54,7 @@ export const api = {
   // Quality
   getRolls: (params = '') => apiRequest(`/quality/rolls${params ? '?' + params : ''}`),
   getRollPedigree: (id) => apiRequest(`/quality/rolls/${id}`),
+  getRollPassport: (rollCode) => apiRequest(`/quality/passport/${encodeURIComponent(rollCode)}`),
   logDefect: (rollId, payload) => apiRequest(`/quality/rolls/${rollId}/defects`, { method: 'POST', body: JSON.stringify(payload) }),
   completeInspection: (rollId, decision) => apiRequest(`/quality/rolls/${rollId}/complete-inspection?decision=${decision}`, { method: 'POST' }),
   createRoll: (payload) => apiRequest('/quality/rolls', { method: 'POST', body: JSON.stringify(payload) }),
@@ -93,6 +94,7 @@ export const api = {
 
   // Settings & Odoo Export
   getSettings: () => apiRequest('/settings'),
+  getLanIp: () => apiRequest('/settings/lan-ip'),
   updateSettings: (payload) => apiRequest('/settings', { method: 'PUT', body: JSON.stringify(payload) }),
   getAuditTrail: (entity = '') => apiRequest(`/settings/audit-trail${entity ? '?entity=' + entity : ''}`),
   getShiftHandoverReport: () => apiRequest('/settings/shift-handover-report'),

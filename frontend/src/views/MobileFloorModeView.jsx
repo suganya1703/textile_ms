@@ -15,8 +15,9 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useToast } from '../components/common';
+import { RollScannerModal } from '../components/common/RollScannerModal';
 
-export function MobileFloorModeView({ onBack }) {
+export function MobileFloorModeView({ onBack, onOpenRollPassport }) {
   const [machines, setMachines] = useState([]);
   const [selectedMachineId, setSelectedMachineId] = useState('');
   const [outputIncrement, setOutputIncrement] = useState(10);
@@ -25,6 +26,8 @@ export function MobileFloorModeView({ onBack }) {
   const [rolls, setRolls] = useState([]);
   const [targetRollId, setTargetRollId] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [quickRollCode, setQuickRollCode] = useState('');
   const { showToast } = useToast();
 
   const loadData = async () => {
@@ -126,6 +129,49 @@ export function MobileFloorModeView({ onBack }) {
 
       {/* Main Touch Controls Container */}
       <div className="p-4 max-w-lg w-full mx-auto space-y-6">
+        {/* Roll Passport QR Lookup & Camera Scan */}
+        <div className="p-4 bg-slate-800 rounded-2xl border border-slate-700 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-loomdo-teal" />
+              <span className="text-xs font-bold uppercase tracking-wider text-white">
+                Scan Roll QR / Passport
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsScannerOpen(true)}
+              className="px-3 py-1 bg-loomdo-teal text-slate-950 font-bold text-xs rounded-lg hover:bg-white transition-colors cursor-pointer"
+            >
+              Scan Camera
+            </button>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (quickRollCode.trim() && onOpenRollPassport) {
+                onOpenRollPassport(quickRollCode.trim());
+              }
+            }}
+            className="flex gap-2"
+          >
+            <input
+              type="text"
+              value={quickRollCode}
+              onChange={(e) => setQuickRollCode(e.target.value)}
+              placeholder="Enter roll code e.g. ROLL-20261001-0001"
+              className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs font-mono text-white uppercase placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-loomdo-teal"
+            />
+            <button
+              type="submit"
+              disabled={!quickRollCode.trim()}
+              className="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+            >
+              Open
+            </button>
+          </form>
+        </div>
+
         {/* Machine Selector */}
         <div className="space-y-1.5">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -300,6 +346,17 @@ export function MobileFloorModeView({ onBack }) {
           </button>
         </div>
       </div>
+
+      {/* Roll QR Scanner Modal */}
+      <RollScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onSelectRoll={(code) => {
+          if (onOpenRollPassport) {
+            onOpenRollPassport(code);
+          }
+        }}
+      />
     </div>
   );
 }
