@@ -9,11 +9,20 @@ export function formatINR(amount, decimals = 2) {
     return decimals === 2 ? '₹0.00' : '₹0';
   }
   const num = Number(amount);
-  const formatted = num.toLocaleString('en-IN', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  });
-  return `₹${formatted}`;
+  const isNegative = num < 0;
+  const absNum = Math.abs(num);
+
+  let formatted;
+  if (decimals === 0) {
+    formatted = Math.trunc(absNum).toLocaleString('en-IN');
+  } else {
+    formatted = absNum.toLocaleString('en-IN', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  return isNegative ? `-₹${formatted}` : `₹${formatted}`;
 }
 
 /**
