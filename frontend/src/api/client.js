@@ -18,7 +18,21 @@ export async function apiRequest(endpoint, options = {}) {
       return await res.text();
     }
 
-    const data = await res.json();
+    const text = await res.text();
+    let data = {};
+    if (text && text.trim()) {
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        if (!res.ok) {
+          throw new Error(`Server error (${res.status}): Backend service may be starting or offline.`);
+        }
+        throw new Error(`Malformed JSON response from server (${res.status}).`);
+      }
+    } else if (!res.ok) {
+      throw new Error(`Server error (${res.status}): No response body received. Backend service may be restarting.`);
+    }
+
     if (!res.ok) {
       const errorMsg = data?.detail || data?.message || `HTTP error ${res.status}`;
       throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
