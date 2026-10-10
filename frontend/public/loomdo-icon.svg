@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="10" fill="#714B67"/>
+  <!-- Loom shuttle & weave trace motif -->
+  <path d="M12 16H36M12 24H36M12 32H36" stroke="#5BC8B0" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M16 12V36M24 12V36M32 12V36" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="24" cy="24" r="4" fill="#5BC8B0"/>
+</svg>
