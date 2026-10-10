@@ -1,3 +1,4 @@
+import socket
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from datetime import datetime, date
@@ -16,6 +17,24 @@ from backend.app.services.odoo_export import (
 )
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
+
+@router.get("/lan-ip")
+def get_lan_ip():
+    ip = "127.0.0.1"
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        try:
+            ip = socket.gethostbyname(socket.gethostname())
+        except Exception:
+            ip = "127.0.0.1"
+    return {
+        "lan_ip": ip,
+        "suggested_url": f"http://{ip}:5173"
+    }
 
 @router.get("")
 def get_all_settings(db: Session = Depends(get_db)):

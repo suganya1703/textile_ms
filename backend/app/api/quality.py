@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime
 from typing import List, Optional
 
@@ -60,6 +61,126 @@ def get_rolls(
         ))
 
     return results
+
+@router.get("/passport/{roll_code}")
+def get_roll_passport(roll_code: str, db: Session = Depends(get_db)):
+    roll = None
+    clean_code = roll_code.strip()
+    if clean_code.isdigit():
+        roll = db.query(Roll).filter((Roll.id == int(clean_code)) | (Roll.roll_number == clean_code)).first()
+    if not roll:
+        roll = db.query(Roll).filter(func.lower(Roll.roll_number) == clean_code.lower()).first()
+
+    if not roll:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Roll with code '{roll_code}' not found."
+        )
+
+    order = roll.order
+    machine = roll.machine
+    yarn_batch = roll.yarn_batch
+    supplier = yarn_batch.supplier if yarn_batch else None
+    operator = roll.operator
+    dispatch = roll.dispatch
+
+    # Yarn and manufacturing cost estimation (excluding confidential worker wages & credit limits)
+    yarn_rate = yarn_batch.cost_per_kg if yarn_batch and yarn_batch.cost_per_kg else 220.0
+    yarn_cost = round(roll.length_m * 0.20 * yarn_rate, 2)
+    overhead_rate = 250.0  # Factory rate/hr
+    overhead_cost = round(overhead_rate * 2.0, 2)
+    total_roll_cost = round(yarn_cost + overhead_cost, 2)
+
+    defects_data = [
+        {
+            "id": d.id,
+            "type": d.type,
+            "size_in": d.size_in,
+            "points": d.points,
+            "created_at": d.created_at.isoformat()
+        }
+        for d in roll.defects
+    ]
+
+    return {
+        "roll_id": roll.id,
+        "roll_code": roll.roll_number,
+        "roll_number": roll.roll_number,
+        "fabric_type": order.fabric_type if order else "Cotton Sheeting",
+        "length_m": roll.length_m,
+        "width_in": roll.width_in,
+        "dye_lot": roll.dye_lot,
+        "shade_value": roll.shade_value,
+        "qc_status": roll.qc_status,
+        "grade": roll.grade or ("A" if roll.defect_points <= 20 else "B" if roll.defect_points <= 40 else "Reject"),
+        "defect_points": roll.defect_points,
+        "inspected_area_sq_yd": roll.inspected_area_sq_yd,
+        "shift": roll.shift,
+        "dispatched": roll.dispatched,
+        "created_at": roll.created_at.isoformat(),
+        "timeline": [
+            {
+                "step": "yarn_intake",
+                "title": "Yarn Batch & Supplier",
+                "status": "completed",
+                "batch_code": yarn_batch.batch_code if yarn_batch else "N/A",
+                "supplier": supplier.name if supplier else "Mill Stock",
+                "yarn_type": yarn_batch.yarn_type if yarn_batch else "Cotton 30s",
+                "colour": yarn_batch.colour if yarn_batch else "Natural",
+                "received_date": yarn_batch.received_at.isoformat() if (yarn_batch and yarn_batch.received_at) else None,
+                "cost_per_kg": yarn_batch.cost_per_kg if yarn_batch else None
+            },
+            {
+                "step": "order_booking",
+                "title": "Customer Order",
+                "status": "completed",
+                "order_number": order.order_number if order else "Stock Production",
+                "buyer": order.buyer.name if (order and order.buyer) else "Internal Stock",
+                "fabric_type": order.fabric_type if order else "Cotton Sheeting",
+                "ordered_at": order.created_at.isoformat() if order else None
+            },
+            {
+                "step": "weaving_production",
+                "title": "Loom & Weaving",
+                "status": "completed",
+                "machine": machine.name if machine else "Loom",
+                "stage": machine.stage if machine else "weaving",
+                "operator": operator.name if operator else "Shift Operator",
+                "operator_role": operator.role if operator else "Weaver",
+                "shift": roll.shift,
+                "dye_lot": roll.dye_lot,
+                "shade_value": roll.shade_value,
+                "length_m": roll.length_m,
+                "width_in": roll.width_in
+            },
+            {
+                "step": "quality_inspection",
+                "title": "Quality Control & 4-Point ASTM",
+                "status": "completed" if roll.qc_status in ("pass", "rework", "reject") else "pending",
+                "qc_status": roll.qc_status,
+                "grade": roll.grade or ("A" if roll.defect_points <= 20 else "B"),
+                "defect_points": roll.defect_points,
+                "defects_count": len(defects_data),
+                "defects": defects_data
+            },
+            {
+                "step": "dispatch_invoicing",
+                "title": "Warehouse & Dispatch",
+                "status": "completed" if roll.dispatched else "staged",
+                "dispatched": roll.dispatched,
+                "dispatch_number": dispatch.dispatch_number if dispatch else None,
+                "vehicle_no": dispatch.vehicle_no if dispatch else None,
+                "dispatched_at": dispatch.dispatched_at.isoformat() if dispatch else None,
+                "invoice_no": dispatch.invoice.invoice_no if (dispatch and dispatch.invoice) else None,
+                "invoice_date": dispatch.invoice.invoice_date.isoformat() if (dispatch and dispatch.invoice and dispatch.invoice.invoice_date) else None
+            }
+        ],
+        "cost": {
+            "yarn_cost": yarn_cost,
+            "overhead_cost": overhead_cost,
+            "total_cost": total_roll_cost
+        }
+    }
 
 @router.get("/rolls/{roll_id}")
 def get_roll_pedigree(roll_id: int, db: Session = Depends(get_db)):

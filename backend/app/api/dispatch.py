@@ -194,8 +194,10 @@ def execute_dispatch(payload: DispatchCreate, db: Session = Depends(get_db)):
 
         # Step 4: Generate unique dispatch number: DSP-YYYYMMDD-XXX
         date_str = datetime.utcnow().strftime("%Y%m%d")
-        count_today = db.query(Dispatch).filter(Dispatch.dispatch_number.like(f"DSP-{date_str}-%")).count() + 1
-        dispatch_number = f"DSP-{date_str}-{count_today:03d}"
+        seq = db.query(Dispatch).filter(Dispatch.dispatch_number.like(f"DSP-{date_str}-%")).count() + 1
+        while db.query(Dispatch).filter(Dispatch.dispatch_number == f"DSP-{date_str}-{seq:03d}").first():
+            seq += 1
+        dispatch_number = f"DSP-{date_str}-{seq:03d}"
 
         new_dispatch = Dispatch(
             dispatch_number=dispatch_number,
@@ -235,6 +237,8 @@ def execute_dispatch(payload: DispatchCreate, db: Session = Depends(get_db)):
         total = round(subtotal + tax, 2)
 
         inv_count_today = db.query(Invoice).filter(Invoice.invoice_no.like(f"INV-{date_str}-%")).count() + 1
+        while db.query(Invoice).filter(Invoice.invoice_no == f"INV-{date_str}-{inv_count_today:03d}").first():
+            inv_count_today += 1
         invoice_no = f"INV-{date_str}-{inv_count_today:03d}"
 
         invoice = Invoice(

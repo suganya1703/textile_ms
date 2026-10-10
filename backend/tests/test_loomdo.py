@@ -149,3 +149,59 @@ def test_odoo_exports_endpoint():
         assert resp.status_code == 200
         assert "text/csv" in resp.headers["content-type"]
         assert len(resp.text) > 10
+
+def test_roll_passport_full_journey():
+    # 1. Fetch rolls list to get a valid seeded roll code
+    rolls_resp = client.get("/api/quality/rolls")
+    assert rolls_resp.status_code == 200
+    rolls = rolls_resp.json()
+    assert len(rolls) > 0
+    roll_code = rolls[0]["roll_number"]
+
+    # 2. Query public passport endpoint
+    resp = client.get(f"/api/quality/passport/{roll_code}")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data["roll_code"] == roll_code
+    assert "timeline" in data
+    assert len(data["timeline"]) >= 4
+
+    # Verify timeline stages
+    stage_steps = [s["step"] for s in data["timeline"]]
+    assert "yarn_intake" in stage_steps
+    assert "order_booking" in stage_steps
+    assert "weaving_production" in stage_steps
+    assert "quality_inspection" in stage_steps
+
+    # Verify cost breakdown
+    assert "cost" in data
+    assert "yarn_cost" in data["cost"]
+    assert "overhead_cost" in data["cost"]
+    assert "total_cost" in data["cost"]
+
+def test_roll_passport_unknown_code_returns_404():
+    resp = client.get("/api/quality/passport/ROLL-UNKNOWN-99999")
+    assert resp.status_code == 404
+    data = resp.json()
+    assert "not found" in data["detail"].lower()
+
+def test_roll_passport_no_private_fields_leaked():
+    rolls_resp = client.get("/api/quality/rolls")
+    roll_code = rolls_resp.json()[0]["roll_number"]
+
+    resp = client.get(f"/api/quality/passport/{roll_code}")
+    assert resp.status_code == 200
+    raw_text = resp.text.lower()
+
+    # Private confidential fields that must NEVER be leaked on public passport
+    forbidden_terms = [
+        "wage_rate_per_shift",
+        "credit_limit",
+        "current_balance",
+        "balance_due",
+        "operator_wage",
+        "worker_wage"
+    ]
+    for term in forbidden_terms:
+        assert term not in raw_text, f"Forbidden confidential field '{term}' was leaked in public passport response!"

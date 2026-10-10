@@ -43,7 +43,8 @@ def seed():
         ("four_point_grade_b_max", "40.0", "Max defect points per 100 sq yd for Grade B concession (ASTM D5430)"),
         ("expected_yield_ratio", "0.95", "Expected fabric yield ratio from yarn (0.95 = 5% normal process loss)"),
         ("tax_rate_pct", "5.0", "Applicable GST tax rate percentage on fabric dispatches"),
-        ("four_point_standard_source", "ASTM D5430 - 4-Point System (American Society for Testing and Materials)", "Standard reference")
+        ("four_point_standard_source", "ASTM D5430 - 4-Point System (American Society for Testing and Materials)", "Standard reference"),
+        ("public_base_url", "http://localhost:5173", "Base URL encoded into Roll Passport QR codes for network and mobile access")
     ]
     for k, v, d in settings_data:
         db.add(Setting(key=k, value=v, description=d))
