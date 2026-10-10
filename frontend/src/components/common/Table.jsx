@@ -29,7 +29,7 @@ export function Table({
               mobileCardRender(row, idx)
             ) : (
               columns.map((col, cIdx) => (
-                <div key={cIdx} className="flex justify-between items-center text-xs py-1.5 border-b border-[#F3F4F6] last:border-0">
+                <div key={cIdx} className="flex justify-between items-center text-[14px] py-1.5 border-b border-[#F3F4F6] last:border-0">
                   <span className="font-medium text-[#6B7280]">{col.header}</span>
                   <span className="font-semibold text-[#111827] text-right">
                     {col.render ? col.render(row) : row[col.accessor]}
@@ -43,8 +43,8 @@ export function Table({
 
       {/* Desktop / Tablet Table View (hidden below md: 768px) */}
       <div className="hidden md:block overflow-x-auto rounded-[12px] border border-[#E5E7EB] bg-white">
-        <table className={`min-w-full w-full text-left text-sm text-[#111827] tabular-nums ${className}`}>
-          <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-[12px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
+        <table className={`min-w-full w-full text-left table-text text-[14px] text-[#111827] tabular-nums ${className}`}>
+          <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB] table-header text-[12px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
             <tr>
               {columns.map((col, idx) => (
                 <th

@@ -186,10 +186,10 @@ export function WorkforceView() {
       {/* Top Header: Title + Subtitle and [⚡ Generate Wages] on one line */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+          <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
             Workforce
           </h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">
+          <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
             Attendance, assignments and wages
           </p>
         </div>

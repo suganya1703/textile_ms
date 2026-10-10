@@ -11,11 +11,11 @@ export function PageHeader({
     <div className={`mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${className}`}>
       <div>
         <div className="flex items-center gap-2.5">
-          <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">{title}</h1>
+          <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">{title}</h1>
           {badge && <div>{badge}</div>}
         </div>
         {subtitle && (
-          <p className="text-[14px] text-[#6B7280] mt-1">{subtitle}</p>
+          <p className="page-subtitle text-[14px] text-[#6B7280] mt-1">{subtitle}</p>
         )}
       </div>
       {actions && (

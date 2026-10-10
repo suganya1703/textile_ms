@@ -160,10 +160,10 @@ export function InsightsView() {
     <div className="space-y-6">
       {/* Page Title & Subtitle */}
       <div>
-        <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+        <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
           Insights
         </h1>
-        <p className="text-[13px] text-[#6B7280] mt-0.5">
+        <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
           Yield analysis, defect diagnosis and delivery forecasting
         </p>
       </div>

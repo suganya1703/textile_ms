@@ -115,10 +115,10 @@ export function FloorMapView() {
       {/* Page Title & Subtitle */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+          <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
             Floor Map
           </h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">
+          <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
             2D mill floor plan with live telemetry and machine status
           </p>
         </div>

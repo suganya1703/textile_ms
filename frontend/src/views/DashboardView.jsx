@@ -88,7 +88,7 @@ export function DashboardView({ onNavigate }) {
       header: 'ORDER',
       accessor: 'order_number',
       render: (o) => (
-        <span className="font-mono font-bold text-[#714B67] text-xs sm:text-sm">
+        <span className="font-mono font-bold text-[#714B67] text-[14px]">
           #{o.order_number}
         </span>
       )
@@ -96,25 +96,25 @@ export function DashboardView({ onNavigate }) {
     {
       header: 'BUYER',
       accessor: 'buyer_name',
-      render: (o) => <span className="font-medium text-[#111827] text-xs sm:text-sm">{o.buyer_name || 'Buyer'}</span>
+      render: (o) => <span className="font-medium text-[#111827] text-[14px]">{o.buyer_name || 'Buyer'}</span>
     },
     {
       header: 'QUANTITY',
       accessor: 'quantity_m',
       align: 'right',
-      render: (o) => <span className="tabular-nums font-mono text-xs">{formatNumber(o.quantity_m)} m</span>
+      render: (o) => <span className="tabular-nums font-mono text-[14px]">{formatNumber(o.quantity_m)} m</span>
     },
     {
       header: 'REVENUE',
       accessor: 'total_revenue',
       align: 'right',
-      render: (o) => <span className="tabular-nums font-mono font-medium text-[#111827] text-xs">{formatINR(o.total_revenue)}</span>
+      render: (o) => <span className="tabular-nums font-mono font-medium text-[#111827] text-[14px]">{formatINR(o.total_revenue, 2)}</span>
     },
     {
       header: 'COST',
       accessor: 'cost_breakdown',
       align: 'right',
-      render: (o) => <span className="tabular-nums font-mono text-[#4B5563] text-xs">{formatINR(o.clampedCost)}</span>
+      render: (o) => <span className="tabular-nums font-mono text-[#4B5563] text-[14px]">{formatINR(o.clampedCost, 2)}</span>
     },
     {
       header: 'GROSS MARGIN',
@@ -122,7 +122,7 @@ export function DashboardView({ onNavigate }) {
       align: 'right',
       render: (o) => (
         <span
-          className={`tabular-nums font-mono font-bold text-xs ${
+          className={`tabular-nums font-mono font-bold text-[14px] ${
             o.isLoss ? 'text-rose-600' : 'text-emerald-600'
           }`}
         >
@@ -146,10 +146,10 @@ export function DashboardView({ onNavigate }) {
     <div className="space-y-6">
       {/* Page Title & Subtitle */}
       <div>
-        <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+        <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
           Owner Dashboard
         </h1>
-        <p className="text-[13px] text-[#6B7280] mt-0.5">
+        <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
           Month: 2026-10
         </p>
       </div>
@@ -162,10 +162,10 @@ export function DashboardView({ onNavigate }) {
             📦
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               TOTAL ORDERS
             </div>
-            <div className="text-[26px] font-bold text-[#111827] tabular-nums leading-tight mt-0.5">
+            <div className="kpi-value text-[22px] font-bold text-[#111827] tabular-nums whitespace-nowrap leading-tight mt-0.5">
               {totalOrdersCount}
             </div>
           </div>
@@ -177,10 +177,10 @@ export function DashboardView({ onNavigate }) {
             ⚡
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               ACTIVE ORDERS
             </div>
-            <div className="text-[26px] font-bold text-[#111827] tabular-nums leading-tight mt-0.5">
+            <div className="kpi-value text-[22px] font-bold text-[#111827] tabular-nums whitespace-nowrap leading-tight mt-0.5">
               {activeOrdersCount}
             </div>
           </div>
@@ -192,10 +192,10 @@ export function DashboardView({ onNavigate }) {
             🏷️
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               ROLLS ON SHELF
             </div>
-            <div className="text-[26px] font-bold text-[#111827] tabular-nums leading-tight mt-0.5">
+            <div className="kpi-value text-[22px] font-bold text-[#111827] tabular-nums whitespace-nowrap leading-tight mt-0.5">
               {rollsOnShelfCount}
             </div>
           </div>
@@ -207,10 +207,10 @@ export function DashboardView({ onNavigate }) {
             🔍
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               PENDING QC
             </div>
-            <div className="text-[26px] font-bold text-amber-500 tabular-nums leading-tight mt-0.5">
+            <div className="kpi-value text-[22px] font-bold text-amber-500 tabular-nums whitespace-nowrap leading-tight mt-0.5">
               {pendingQCCount}
             </div>
           </div>
@@ -225,11 +225,11 @@ export function DashboardView({ onNavigate }) {
             💵
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               TOTAL REVENUE
             </div>
-            <div className="text-[24px] font-bold text-[#16A34A] tabular-nums leading-tight mt-0.5">
-              {formatINR(totalRevenue)}
+            <div className="kpi-value text-[22px] font-bold text-[#16A34A] tabular-nums whitespace-nowrap leading-tight mt-0.5">
+              {formatINR(totalRevenue, 0)}
             </div>
           </div>
         </div>
@@ -240,11 +240,11 @@ export function DashboardView({ onNavigate }) {
             ⌛
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               UNPAID INVOICES
             </div>
-            <div className="text-[24px] font-bold text-amber-500 tabular-nums leading-tight mt-0.5">
-              {formatINR(unpaidInvoices)}
+            <div className="kpi-value text-[22px] font-bold text-amber-500 tabular-nums whitespace-nowrap leading-tight mt-0.5">
+              {formatINR(unpaidInvoices, 0)}
             </div>
           </div>
         </div>
@@ -255,11 +255,11 @@ export function DashboardView({ onNavigate }) {
             👷
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               WAGES PAID
             </div>
-            <div className="text-[24px] font-bold text-[#714B67] tabular-nums leading-tight mt-0.5">
-              {formatINR(wagesPaid)}
+            <div className="kpi-value text-[22px] font-bold text-[#714B67] tabular-nums whitespace-nowrap leading-tight mt-0.5">
+              {formatINR(wagesPaid, 0)}
             </div>
           </div>
         </div>
@@ -270,10 +270,10 @@ export function DashboardView({ onNavigate }) {
             📉
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+            <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               LOSS-MAKING ORDERS
             </div>
-            <div className="text-[26px] font-bold text-rose-600 tabular-nums leading-tight mt-0.5">
+            <div className="kpi-value text-[22px] font-bold text-rose-600 tabular-nums whitespace-nowrap leading-tight mt-0.5">
               {sanitizedCostingOrders.filter((o) => o.isLoss).length || 1}
             </div>
           </div>
@@ -284,42 +284,48 @@ export function DashboardView({ onNavigate }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* P&L — 2026-10 Card */}
         <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-5 space-y-4">
-          <h3 className="font-semibold text-[15px] text-[#111827]">
+          <h3 className="card-title text-[16px] font-semibold text-[#111827]">
             P&L — 2026-10
           </h3>
-          <div className="space-y-3 text-xs">
+          <div className="space-y-3 text-[14px]">
             <div className="flex justify-between items-center py-1">
-              <span className="text-[#6B7280]">Revenue</span>
-              <span className="font-mono font-semibold text-[#16A34A] tabular-nums">
-                {formatINR(pl_statement?.gross_revenue || 300900)}
+              <span className="text-[14px] text-[#6B7280]">Revenue</span>
+              <span className="font-semibold text-[#16A34A] tabular-nums text-[14px]">
+                {formatINR(pl_statement?.gross_revenue || 300900, 0)}
               </span>
             </div>
 
             <div className="flex justify-between items-center py-1">
-              <span className="text-[#6B7280]">Wages</span>
-              <span className="font-mono font-semibold text-[#111827] tabular-nums">
-                {formatINR(pl_statement?.total_wages || 125995)}
+              <span className="text-[14px] text-[#6B7280]">Wages</span>
+              <span className="font-semibold text-[#111827] tabular-nums text-[14px]">
+                {formatINR(pl_statement?.total_wages || 125995, 0)}
               </span>
             </div>
 
             <div className="flex justify-between items-center py-1">
-              <span className="text-[#6B7280]">Idle wages</span>
-              <span className="font-mono font-semibold text-amber-500 tabular-nums">
-                {formatINR(pl_statement?.idle_labour_cost || 96395)}
+              <span className="text-[14px] text-[#6B7280]">Idle wages</span>
+              <span className="font-semibold text-amber-500 tabular-nums text-[14px]">
+                {formatINR(pl_statement?.idle_labour_cost || 96395, 0)}
               </span>
             </div>
 
             <div className="flex justify-between items-center py-1">
-              <span className="text-[#6B7280]">Other expenses</span>
-              <span className="font-mono font-semibold text-[#111827] tabular-nums">
-                {formatINR((pl_statement?.yarn_expense || 0) + (pl_statement?.factory_overhead || 0) || 32000)}
+              <span className="text-[14px] text-[#6B7280]">Other expenses</span>
+              <span className="font-semibold text-[#111827] tabular-nums text-[14px]">
+                {formatINR((pl_statement?.yarn_expense || 0) + (pl_statement?.factory_overhead || 0) || 32000, 0)}
               </span>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-[#F3F4F6] text-sm">
-              <span className="font-bold text-[#111827]">Net Profit</span>
-              <span className="font-mono font-bold text-[#16A34A] tabular-nums">
-                {formatINR(pl_statement?.net_profit || 142905)}
+            <div className="flex justify-between items-center pt-3 border-t border-[#F3F4F6]">
+              <span className="text-[16px] font-bold text-[#111827]">Net Profit</span>
+              <span
+                className={`text-[16px] font-bold tabular-nums ${
+                  (pl_statement?.net_profit ?? 142905) < 0
+                    ? 'text-rose-600'
+                    : 'text-[#16A34A]'
+                }`}
+              >
+                {formatINR(pl_statement?.net_profit ?? 142905, 0)}
               </span>
             </div>
           </div>
@@ -329,39 +335,39 @@ export function DashboardView({ onNavigate }) {
         <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-5 space-y-4 flex flex-col justify-between">
           <div>
             <div>
-              <h3 className="font-semibold text-[15px] text-[#111827]">
+              <h3 className="card-title text-[16px] font-semibold text-[#111827]">
                 Wage Reconciliation
               </h3>
-              <p className="text-[12px] text-[#6B7280] mt-0.5">
+              <p className="card-subtitle text-[12px] text-[#6B7280] mt-0.5">
                 2026-10
               </p>
             </div>
-            <div className="space-y-3 text-xs mt-4">
+            <div className="space-y-3 text-[14px] mt-4">
               <div className="flex justify-between items-center py-1">
-                <span className="text-[#6B7280]">Job wages</span>
-                <span className="font-mono font-semibold text-[#111827] tabular-nums">
-                  {formatINR(labour_reconciliation?.order_direct_labour || 29600)}
+                <span className="text-[14px] text-[#6B7280]">Job wages</span>
+                <span className="font-semibold text-[#111827] tabular-nums text-[14px]">
+                  {formatINR(labour_reconciliation?.order_direct_labour || 29600, 0)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-1">
-                <span className="text-[#6B7280]">Idle wages</span>
-                <span className="font-mono font-semibold text-[#111827] tabular-nums">
-                  {formatINR(labour_reconciliation?.idle_labour_cost || 96395)}
+                <span className="text-[14px] text-[#6B7280]">Idle wages</span>
+                <span className="font-semibold text-[#111827] tabular-nums text-[14px]">
+                  {formatINR(labour_reconciliation?.idle_labour_cost || 96395, 0)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-1">
-                <span className="text-[#6B7280]">Sum of parts</span>
-                <span className="font-mono font-semibold text-[#111827] tabular-nums">
-                  {formatINR((labour_reconciliation?.order_direct_labour || 29600) + (labour_reconciliation?.idle_labour_cost || 96395))}
+                <span className="text-[14px] text-[#6B7280]">Sum of parts</span>
+                <span className="font-semibold text-[#111827] tabular-nums text-[14px]">
+                  {formatINR((labour_reconciliation?.order_direct_labour || 29600) + (labour_reconciliation?.idle_labour_cost || 96395), 0)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-1">
-                <span className="text-[#6B7280]">Total wages</span>
-                <span className="font-mono font-semibold text-[#111827] tabular-nums">
-                  {formatINR(labour_reconciliation?.total_wages_for_period || 125995)}
+                <span className="text-[14px] text-[#6B7280]">Total wages</span>
+                <span className="font-semibold text-[#111827] tabular-nums text-[14px]">
+                  {formatINR(labour_reconciliation?.total_wages_for_period || 125995, 0)}
                 </span>
               </div>
             </div>
@@ -376,23 +382,23 @@ export function DashboardView({ onNavigate }) {
 
       {/* Margin Alerts — Loss-making Orders Card */}
       <div className="bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-5 space-y-3">
-        <h4 className="font-semibold text-xs text-[#111827] flex items-center gap-1.5">
+        <h4 className="card-title text-[16px] font-semibold text-[#111827] flex items-center gap-1.5">
           <span>⚠️</span>
           <span>Margin Alerts — Loss-making Orders</span>
         </h4>
 
-        <div className="p-3 bg-gray-50/50 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+        <div className="p-3 bg-gray-50/50 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[14px]">
           <div className="font-medium text-[#111827]">
             Order #11 Cotton 30s / Red
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[#6B7280]">
-              Cost: <strong className="font-mono text-[#111827]">{formatINR(182750)}</strong>
+              Cost: <strong className="tabular-nums font-semibold text-[#111827]">{formatINR(182750, 0)}</strong>
             </span>
             <span className="text-[#6B7280]">
-              Revenue: <strong className="font-mono text-[#111827]">{formatINR(24000)}</strong>
+              Revenue: <strong className="tabular-nums font-semibold text-[#111827]">{formatINR(24000, 0)}</strong>
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 font-mono font-bold text-[11px]">
+            <span className="px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 font-semibold text-xs tabular-nums">
               -8.5%
             </span>
           </div>

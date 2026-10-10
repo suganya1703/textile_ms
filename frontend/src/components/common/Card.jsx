@@ -15,8 +15,8 @@ export function CardHeader({ title, subtitle, action, className = '' }) {
   return (
     <div className={`p-5 sm:p-6 border-b border-[#F3F4F6] flex items-center justify-between gap-4 ${className}`}>
       <div>
-        <h3 className="font-semibold text-[15px] text-[#111827] leading-snug">{title}</h3>
-        {subtitle && <p className="text-[13px] text-[#6B7280] mt-0.5">{subtitle}</p>}
+        <h3 className="card-title text-[16px] font-semibold text-[#111827] leading-snug">{title}</h3>
+        {subtitle && <p className="card-subtitle text-[14px] text-[#6B7280] mt-0.5">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>
