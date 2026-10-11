@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, date, timedelta
 from typing import List, Optional
+import time
 
 from backend.app.core.database import get_db
 from backend.app.models.yarn_order import Order, YarnBatch
@@ -11,10 +12,15 @@ from backend.app.models.system import AuditLog
 from backend.app.schemas.schemas import (
     OrderCreate,
     OrderResponse,
-    OrderFeasibilityQuoteRequest
+    OrderFeasibilityQuoteRequest,
+    BuyerTrackingRequest
 )
+from backend.app.services.delay_risk import evaluate_order_delay_risk
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
+
+FAILED_TRACKING_ATTEMPTS: dict = {}
+
 
 STAGES_ORDER = ["Created", "Yarn reserved", "Spinning", "Weaving", "Dyeing", "QC", "Ready", "Dispatched"]
 
@@ -160,6 +166,229 @@ def get_public_tracking(order_ref: str, db: Session = Depends(get_db)):
         "expected_delivery": order.expected_delivery.strftime("%d %b %Y"),
         "stages": stages
     }
+
+def check_rate_limit(client_ip: str):
+    now = time.time()
+    cutoff = now - 60.0
+    attempts = [t for t in FAILED_TRACKING_ATTEMPTS.get(client_ip, []) if t > cutoff]
+    FAILED_TRACKING_ATTEMPTS[client_ip] = attempts
+    if len(attempts) >= 5:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many failed tracking attempts. Please wait 1 minute before trying again."
+        )
+
+def record_failed_attempt(client_ip: str):
+    now = time.time()
+    cutoff = now - 60.0
+    attempts = [t for t in FAILED_TRACKING_ATTEMPTS.get(client_ip, []) if t > cutoff]
+    attempts.append(now)
+    FAILED_TRACKING_ATTEMPTS[client_ip] = attempts
+
+@router.post("/track")
+def track_buyer_orders_securely(payload: BuyerTrackingRequest, request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    check_rate_limit(client_ip)
+
+    phone_clean = "".join(filter(str.isdigit, payload.phone_last4 or ""))
+    if len(phone_clean) != 4:
+        record_failed_attempt(client_ip)
+        raise HTTPException(status_code=404, detail="No match found")
+
+    ident = payload.identifier.strip()
+    buyer = None
+
+    # Try order number first
+    matched_order = db.query(Order).filter(func.lower(Order.order_number) == ident.lower()).first()
+    if matched_order and matched_order.buyer:
+        buyer = matched_order.buyer
+
+    # Try buyer code / ID / Name
+    if not buyer:
+        if ident.isdigit():
+            buyer = db.query(Buyer).filter(Buyer.id == int(ident)).first()
+        elif ident.upper().startswith("BUYER-") and ident[6:].isdigit():
+            buyer = db.query(Buyer).filter(Buyer.id == int(ident[6:])).first()
+        else:
+            buyer = db.query(Buyer).filter(func.lower(Buyer.name) == ident.lower()).first()
+
+    if not buyer:
+        record_failed_attempt(client_ip)
+        raise HTTPException(status_code=404, detail="No match found")
+
+    buyer_phone_digits = "".join(filter(str.isdigit, buyer.phone or ""))
+    if not buyer_phone_digits.endswith(phone_clean):
+        record_failed_attempt(client_ip)
+        raise HTTPException(status_code=404, detail="No match found")
+
+    # Success: clear failed attempts for this client IP
+    FAILED_TRACKING_ATTEMPTS.pop(client_ip, None)
+
+    # Build safe orders list (no costs, no margins, no wages, no internal database IDs)
+    orders_data = []
+    for o in buyer.orders:
+        passed_rolls = [r for r in o.rolls if r.qc_status == 'pass']
+        ready_rolls = [r for r in passed_rolls if not r.dispatched]
+        passed_m = sum(r.length_m for r in passed_rolls)
+        ready_m = sum(r.length_m for r in ready_rolls)
+        pct = min(100.0, round((passed_m / o.quantity_m * 100), 1)) if o.quantity_m > 0 else 0.0
+
+        current_idx = STAGES_ORDER.index(o.status) if o.status in STAGES_ORDER else 0
+        stage_timeline = [
+            {"name": "Spinning", "completed": current_idx >= 2, "active": current_idx == 2},
+            {"name": "Weaving", "completed": current_idx >= 3, "active": current_idx == 3},
+            {"name": "Dyeing", "completed": current_idx >= 4, "active": current_idx == 4},
+            {"name": "Quality Inspection", "completed": current_idx >= 5, "active": current_idx == 5},
+            {"name": "Ready for Dispatch", "completed": current_idx >= 6, "active": current_idx == 6},
+            {"name": "Dispatched", "completed": current_idx >= 7, "active": current_idx == 7}
+        ]
+
+        orders_data.append({
+            "order_number": o.order_number,
+            "fabric_type": o.fabric_type,
+            "colour": o.colour,
+            "quantity_m": o.quantity_m,
+            "deadline": o.deadline.isoformat(),
+            "expected_delivery": o.expected_delivery.isoformat(),
+            "status": o.status,
+            "progress_pct": pct,
+            "rolls_ready": len(ready_rolls),
+            "metres_ready": round(ready_m, 1),
+            "stage_timeline": stage_timeline
+        })
+
+    # Dispatches (no internal IDs)
+    dispatches_data = [
+        {
+            "dispatch_number": d.dispatch_number,
+            "dispatched_at": d.dispatched_at.isoformat(),
+            "vehicle_no": d.vehicle_no,
+            "roll_count": len(d.rolls),
+            "total_metres": round(sum(r.length_m for r in d.rolls), 1)
+        }
+        for d in buyer.dispatches
+    ]
+
+    # Invoices (no internal IDs)
+    invoices_data = [
+        {
+            "invoice_number": inv.invoice_no,
+            "amount": round(inv.total, 2),
+            "status": inv.status,
+            "is_paid": inv.status == "paid",
+            "issued_at": inv.issued_at.isoformat()
+        }
+        for inv in buyer.invoices
+    ]
+
+    return {
+        "buyer_name": buyer.name,
+        "city": buyer.city,
+        "orders": orders_data,
+        "dispatches": dispatches_data,
+        "invoices": invoices_data
+    }
+
+@router.get("/buyers/{buyer_id}/360")
+def get_buyer_360(buyer_id: int, db: Session = Depends(get_db)):
+    buyer = db.query(Buyer).filter(Buyer.id == buyer_id).first()
+    if not buyer:
+        raise HTTPException(status_code=404, detail="Buyer not found.")
+
+    total_invoiced = sum(inv.total for inv in buyer.invoices)
+    total_paid = sum(p.amount for p in buyer.payments)
+    outstanding_balance = round(max(0.0, total_invoiced - total_paid), 2)
+    available_credit = round(max(0.0, buyer.credit_limit - outstanding_balance), 2)
+    credit_utilization_pct = round((outstanding_balance / buyer.credit_limit * 100), 1) if buyer.credit_limit > 0 else 0.0
+
+    orders_data = []
+    for o in buyer.orders:
+        passed_metres = sum(r.length_m for r in o.rolls if r.qc_status == 'pass')
+        pct = min(100.0, round((passed_metres / o.quantity_m * 100), 1)) if o.quantity_m > 0 else 0.0
+        risk = evaluate_order_delay_risk(o, db)
+        status_msg = f"Your order {o.order_number} is in {o.status.lower()}, expected on {o.expected_delivery.strftime('%d %b')}"
+
+        orders_data.append({
+            "id": o.id,
+            "order_number": o.order_number,
+            "fabric_type": o.fabric_type,
+            "colour": o.colour,
+            "quantity_m": o.quantity_m,
+            "price_per_m": o.price_per_m,
+            "status": o.status,
+            "deadline": o.deadline.isoformat(),
+            "expected_delivery": o.expected_delivery.isoformat(),
+            "progress_pct": pct,
+            "produced_m": round(passed_metres, 1),
+            "delay_risk": {
+                "status": risk.get("status", "green"),
+                "risk_level": risk.get("risk_level", "On Track"),
+                "reason": risk.get("reason", ""),
+                "suggested_action": risk.get("suggested_action", "")
+            },
+            "status_message": status_msg
+        })
+
+    dispatches_data = [
+        {
+            "id": d.id,
+            "dispatch_number": d.dispatch_number,
+            "dispatched_at": d.dispatched_at.isoformat(),
+            "vehicle_no": d.vehicle_no,
+            "roll_count": len(d.rolls),
+            "total_metres": round(sum(r.length_m for r in d.rolls), 1),
+            "invoice_no": d.invoice.invoice_no if d.invoice else None
+        }
+        for d in buyer.dispatches
+    ]
+
+    invoices_data = [
+        {
+            "id": inv.id,
+            "invoice_no": inv.invoice_no,
+            "subtotal": round(inv.subtotal, 2),
+            "tax": round(inv.tax, 2),
+            "total": round(inv.total, 2),
+            "status": inv.status,
+            "issued_at": inv.issued_at.isoformat()
+        }
+        for inv in buyer.invoices
+    ]
+
+    payments_data = [
+        {
+            "id": p.id,
+            "amount": round(p.amount, 2),
+            "paid_at": p.paid_at.isoformat(),
+            "method": p.method,
+            "invoice_id": p.invoice_id
+        }
+        for p in buyer.payments
+    ]
+
+    return {
+        "profile": {
+            "id": buyer.id,
+            "name": buyer.name,
+            "contact": buyer.contact,
+            "phone": buyer.phone,
+            "city": buyer.city,
+            "credit_limit": buyer.credit_limit
+        },
+        "financials": {
+            "credit_limit": buyer.credit_limit,
+            "total_invoiced": round(total_invoiced, 2),
+            "total_paid": round(total_paid, 2),
+            "outstanding_balance": outstanding_balance,
+            "available_credit": available_credit,
+            "credit_utilization_pct": credit_utilization_pct
+        },
+        "orders": orders_data,
+        "dispatches": dispatches_data,
+        "invoices": invoices_data,
+        "payments": payments_data
+    }
+
 
 @router.post("", response_model=OrderResponse)
 def create_order(payload: OrderCreate, db: Session = Depends(get_db)):

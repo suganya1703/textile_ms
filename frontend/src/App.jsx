@@ -33,6 +33,8 @@ function AppContent() {
     return ROLE_MAP[savedRole] || DEMO_ROLES[0];
   });
   const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/track')) return 'tracking';
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/passport')) return 'passport';
     const savedRole = localStorage.getItem('loomdo_role');
     const role = ROLE_MAP[savedRole] || DEMO_ROLES[0];
     return role.defaultTab || 'dashboard';
@@ -76,17 +78,7 @@ function AppContent() {
     setActiveTab('passport');
   };
 
-  // Standalone view renders (NO sidebar, per design rules)
-  if (!isAuthenticated || activeTab === 'landing') {
-    return (
-      <LoginLandingView
-        onLogin={handleLogin}
-        onOpenPublicTracking={() => handleOpenTracking('ORD-2026-001')}
-        onOpenRollPassport={() => handleOpenPassport('ROLL-20261001-0001')}
-      />
-    );
-  }
-
+  // Standalone public view renders (NO sidebar, public access)
   if (activeTab === 'tracking') {
     return (
       <PublicTrackingView
@@ -101,6 +93,17 @@ function AppContent() {
       <RollPassportView
         rollNumber={selectedPassportRoll}
         onBack={() => setActiveTab(isAuthenticated ? 'quality' : 'landing')}
+      />
+    );
+  }
+
+  // Standalone view renders (NO sidebar, per design rules)
+  if (!isAuthenticated || activeTab === 'landing') {
+    return (
+      <LoginLandingView
+        onLogin={handleLogin}
+        onOpenPublicTracking={() => handleOpenTracking('ORD-2026-001')}
+        onOpenRollPassport={() => handleOpenPassport('ROLL-20261001-0001')}
       />
     );
   }

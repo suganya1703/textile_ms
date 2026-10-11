@@ -21,12 +21,14 @@ import {
   useToast
 } from '../components/common';
 import { api } from '../api/client';
+import { Buyer360Modal } from '../components/Buyer360Modal';
 
 export function DispatchView() {
   const [activeTab, setActiveTab] = useState('Dispatch Rolls'); // 'Dispatch Rolls' or 'Finished Stock'
   const [finishedStock, setFinishedStock] = useState(null);
   const [buyers, setBuyers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isBuyer360Open, setIsBuyer360Open] = useState(false);
   const { showToast } = useToast();
 
   // Wizard / Dispatch State
@@ -324,7 +326,7 @@ export function DispatchView() {
                   />
                 </div>
 
-                <div>
+                <div className="flex items-center gap-2">
                   <Button
                     variant="secondary"
                     onClick={handleLoadRolls}
@@ -332,6 +334,13 @@ export function DispatchView() {
                     className="w-full sm:w-auto"
                   >
                     Load Rolls
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsBuyer360Open(true)}
+                    className="w-full sm:w-auto"
+                  >
+                    Buyer 360
                   </Button>
                 </div>
               </div>
@@ -476,6 +485,13 @@ export function DispatchView() {
           </CardContent>
         </Card>
       )}
+
+      {/* Buyer 360 Modal */}
+      <Buyer360Modal
+        isOpen={isBuyer360Open}
+        onClose={() => setIsBuyer360Open(false)}
+        buyerId={selectedBuyerId}
+      />
     </div>
   );
 }

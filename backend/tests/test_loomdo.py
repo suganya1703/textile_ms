@@ -276,4 +276,121 @@ def test_repaired_machine_blocked_when_job_interrupted():
     assert resp.status_code == 400
     assert "reassign or resolve" in resp.json()["detail"].lower() or "interrupted" in resp.json()["detail"].lower()
 
+def test_public_tracking_successful_match():
+    # Test lookup via order number
+    resp = client.post("/api/orders/track", json={
+        "identifier": "ORD-2026-002",
+        "phone_last4": "6329"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["buyer_name"] == "Kaveri Fashions"
+    assert len(data["orders"]) > 0
+    ord0 = data["orders"][0]
+    assert "order_number" in ord0
+    assert "fabric_type" in ord0
+    assert "stage_timeline" in ord0
+    assert "rolls_ready" in ord0
+    assert "metres_ready" in ord0
+    assert len(ord0["stage_timeline"]) == 6
+
+    # Test lookup via buyer name
+    resp2 = client.post("/api/orders/track", json={
+        "identifier": "Kaveri Fashions",
+        "phone_last4": "6329"
+    })
+    assert resp2.status_code == 200
+    assert resp2.json()["buyer_name"] == "Kaveri Fashions"
+
+def test_public_tracking_mismatch_generic_error():
+    # Wrong phone
+    resp1 = client.post("/api/orders/track", json={
+        "identifier": "ORD-2026-002",
+        "phone_last4": "9999"
+    })
+    assert resp1.status_code == 404
+    assert "No match found" in resp1.json()["detail"]
+
+    # Wrong order number
+    resp2 = client.post("/api/orders/track", json={
+        "identifier": "ORD-NONEXISTENT",
+        "phone_last4": "6329"
+    })
+    assert resp2.status_code == 404
+    assert "No match found" in resp2.json()["detail"]
+
+def test_public_tracking_prevents_data_leaks():
+    resp = client.post("/api/orders/track", json={
+        "identifier": "ORD-2026-001",
+        "phone_last4": "4521"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+
+    # Check top-level
+    assert "id" not in data
+    assert "credit_limit" not in data
+
+    # Check orders
+    for o in data["orders"]:
+        assert "id" not in o
+        assert "buyer_id" not in o
+        assert "price_per_m" not in o
+        assert "cost_per_kg" not in o
+        assert "wages" not in o
+        assert "margin" not in o
+
+    # Check dispatches
+    for d in data["dispatches"]:
+        assert "id" not in d
+        assert "buyer_id" not in d
+
+    # Check invoices
+    for inv in data["invoices"]:
+        assert "id" not in inv
+        assert "subtotal" not in inv
+        assert "tax" not in inv
+
+def test_public_tracking_rate_limit():
+    from backend.app.api.orders import FAILED_TRACKING_ATTEMPTS
+    FAILED_TRACKING_ATTEMPTS.clear()
+
+    # 5 failed attempts
+    for _ in range(5):
+        resp = client.post("/api/orders/track", json={
+            "identifier": "ORD-FAKE",
+            "phone_last4": "0000"
+        })
+        assert resp.status_code == 404
+
+    # 6th attempt must be 429
+    resp_rate_limited = client.post("/api/orders/track", json={
+        "identifier": "ORD-FAKE",
+        "phone_last4": "0000"
+    })
+    assert resp_rate_limited.status_code == 429
+    assert "Too many failed tracking attempts" in resp_rate_limited.json()["detail"]
+
+    FAILED_TRACKING_ATTEMPTS.clear()
+
+def test_buyer_360_staff_view():
+    resp = client.get("/api/orders/buyers/2/360")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    # Profile & Financials
+    assert data["profile"]["name"] == "Kaveri Fashions"
+    assert data["financials"]["credit_limit"] == 1500000.0
+    assert "outstanding_balance" in data["financials"]
+    assert "credit_utilization_pct" in data["financials"]
+
+    # Orders with delay risk and status message
+    assert len(data["orders"]) > 0
+    ord0 = data["orders"][0]
+    assert "delay_risk" in ord0
+    assert "risk_level" in ord0["delay_risk"]
+    assert "status_message" in ord0
+    assert "Your order" in ord0["status_message"]
+
+
 

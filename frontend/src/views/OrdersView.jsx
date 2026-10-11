@@ -23,6 +23,7 @@ import {
   useToast
 } from '../components/common';
 import { api } from '../api/client';
+import { Buyer360Modal } from '../components/Buyer360Modal';
 
 export function OrdersView({ onOpenTracking }) {
   const [orders, setOrders] = useState([]);
@@ -30,6 +31,8 @@ export function OrdersView({ onOpenTracking }) {
   const [delayRiskData, setDelayRiskData] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [buyer360Id, setBuyer360Id] = useState(null);
+  const [isBuyer360Open, setIsBuyer360Open] = useState(false);
   const { showToast } = useToast();
 
   // Create Order Modal
@@ -180,6 +183,23 @@ export function OrdersView({ onOpenTracking }) {
         <span className="font-mono font-bold text-[#714B67] text-xs sm:text-sm">
           #{o.order_number}
         </span>
+      )
+    },
+    {
+      header: 'Buyer',
+      accessor: 'buyer_name',
+      render: (o) => (
+        <button
+          type="button"
+          onClick={() => {
+            setBuyer360Id(o.buyer_id);
+            setIsBuyer360Open(true);
+          }}
+          className="text-xs font-semibold text-[#2F3E8F] hover:underline text-left cursor-pointer flex items-center gap-1"
+        >
+          <span>{o.buyer_name || 'Buyer'}</span>
+          <span className="text-[10px] bg-indigo-50 text-[#2F3E8F] px-1 rounded font-bold">360°</span>
+        </button>
       )
     },
     {
@@ -486,15 +506,27 @@ export function OrdersView({ onOpenTracking }) {
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={copiedOrderId === selectedOrder.id ? Check : Copy}
-                onClick={() => copyWhatsAppNotification(selectedOrder)}
-              >
-                {copiedOrderId === selectedOrder.id ? 'Copied' : 'Copy Buyer Notification'}
-              </Button>
+            <div className="flex flex-wrap justify-between items-center gap-2 pt-2">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={copiedOrderId === selectedOrder.id ? Check : Copy}
+                  onClick={() => copyWhatsAppNotification(selectedOrder)}
+                >
+                  {copiedOrderId === selectedOrder.id ? 'Copied' : 'Copy Buyer Notification'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setBuyer360Id(selectedOrder.buyer_id);
+                    setIsBuyer360Open(true);
+                  }}
+                >
+                  Buyer 360
+                </Button>
+              </div>
               <Button
                 variant="primary"
                 size="sm"
@@ -509,6 +541,13 @@ export function OrdersView({ onOpenTracking }) {
           </div>
         )}
       </Modal>
+
+      {/* Buyer 360 Modal */}
+      <Buyer360Modal
+        isOpen={isBuyer360Open}
+        onClose={() => setIsBuyer360Open(false)}
+        buyerId={buyer360Id}
+      />
     </div>
   );
 }

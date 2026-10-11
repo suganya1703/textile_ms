@@ -227,3 +227,8 @@ class JobTransferRequest(BaseModel):
     operator_id: Optional[int] = None
     shift: Optional[str] = None
 
+class BuyerTrackingRequest(BaseModel):
+    identifier: str
+    phone_last4: str
+
+

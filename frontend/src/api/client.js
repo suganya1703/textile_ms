@@ -64,9 +64,12 @@ export const api = {
   getOrders: (params = '') => apiRequest(`/orders${params ? '?' + params : ''}`),
   getOrderDetails: (id) => apiRequest(`/orders/${id}`),
   getBuyers: () => apiRequest('/orders/buyers'),
+  getBuyer360: (id) => apiRequest(`/orders/buyers/${id}/360`),
   createOrder: (payload) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(payload) }),
   simulateOrderFeasibility: (payload) => apiRequest('/orders/simulate-feasibility', { method: 'POST', body: JSON.stringify(payload) }),
   getPublicTracking: (ref) => apiRequest(`/orders/track/${ref}`),
+  trackBuyerOrders: (payload) => apiRequest('/orders/track', { method: 'POST', body: JSON.stringify(payload) }),
+
 
   // Dispatch
   getFinishedStock: () => apiRequest('/dispatch/finished-stock'),
