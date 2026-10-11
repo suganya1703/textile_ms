@@ -111,9 +111,15 @@ export function OrdersView({ onOpenTracking }) {
     }
   };
 
-  const handleOpenViewModal = (order) => {
+  const handleOpenViewModal = async (order) => {
     setSelectedOrder(order);
     setIsViewModalOpen(true);
+    try {
+      const details = await api.getOrderDetails(order.id);
+      setSelectedOrder(details);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const copyWhatsAppNotification = (order) => {
@@ -452,6 +458,33 @@ export function OrdersView({ onOpenTracking }) {
                 <Badge variant={selectedOrder.status}>{formatStatus(selectedOrder.status)}</Badge>
               </div>
             </div>
+
+            {/* Activity Timeline */}
+            {selectedOrder.activity_timeline && selectedOrder.activity_timeline.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-[#E5E7EB]">
+                <h5 className="text-xs font-bold text-[#111827] uppercase tracking-wider">
+                  Order Activity Timeline
+                </h5>
+                <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                  {selectedOrder.activity_timeline.map((act) => (
+                    <div
+                      key={act.id}
+                      className="p-2.5 bg-gray-50 rounded-[6px] border border-gray-200 text-xs flex items-start justify-between gap-2"
+                    >
+                      <div>
+                        <div className="font-medium text-[#111827]">{act.message}</div>
+                        <div className="text-[11px] text-[#6B7280]">
+                          By {act.user} • {new Date(act.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                      <Badge variant="secondary" size="sm">
+                        {act.action}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-between items-center pt-2">
               <Button

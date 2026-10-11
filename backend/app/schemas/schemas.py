@@ -221,3 +221,9 @@ class JobAssignRequest(BaseModel):
 class JobProgressUpdate(BaseModel):
     progress_pct: Optional[float] = None
     output_increment_m: Optional[float] = None
+
+class JobTransferRequest(BaseModel):
+    target_machine_id: int
+    operator_id: Optional[int] = None
+    shift: Optional[str] = None
+

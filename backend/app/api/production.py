@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from backend.app.core.database import get_db
-from backend.app.models.master import Machine, Worker
+from backend.app.models.master import Machine, Worker, Setting
 from backend.app.models.yarn_order import Order, ProductionJob
 from backend.app.models.system import AuditLog
 from backend.app.schemas.schemas import (
     MachineResponse,
     MachineStatusUpdate,
     JobAssignRequest,
-    JobProgressUpdate
+    JobProgressUpdate,
+    JobTransferRequest
 )
 
 router = APIRouter(prefix="/production", tags=["Production"])
@@ -22,7 +23,7 @@ def get_machines_status(db: Session = Depends(get_db)):
     results = []
 
     for m in machines:
-        # Find active job
+        # Find active or interrupted job
         active_job = db.query(ProductionJob).filter(
             ProductionJob.machine_id == m.id,
             ProductionJob.completed_at == None
@@ -30,21 +31,26 @@ def get_machines_status(db: Session = Depends(get_db)):
 
         job_info = None
         if active_job:
-            order = active_job.order
-            operator = active_job.operator
-            job_info = {
-                "job_id": active_job.id,
-                "order_id": active_job.order_id,
-                "order_number": order.order_number if order else None,
-                "fabric_type": order.fabric_type if order else None,
-                "colour": order.colour if order else None,
-                "stage": active_job.stage,
-                "progress_pct": round(active_job.progress_pct, 1),
-                "output_today_m": round(active_job.output_today_m, 1),
-                "shift": active_job.shift,
-                "operator_name": operator.name if operator else "Unassigned",
-                "started_at": active_job.started_at.isoformat() if active_job.started_at else None
-            }
+            if m.status == "idle":
+                # Idle machine has no active job
+                job_info = None
+            else:
+                order = active_job.order
+                operator = active_job.operator
+                job_info = {
+                    "job_id": active_job.id,
+                    "status": active_job.status or "active",
+                    "order_id": active_job.order_id,
+                    "order_number": order.order_number if order else None,
+                    "fabric_type": order.fabric_type if order else None,
+                    "colour": order.colour if order else None,
+                    "stage": active_job.stage,
+                    "progress_pct": round(active_job.progress_pct, 1),
+                    "output_today_m": round(active_job.output_today_m, 1),
+                    "shift": active_job.shift,
+                    "operator_name": operator.name if operator else "Unassigned",
+                    "started_at": active_job.started_at.isoformat() if active_job.started_at else None
+                }
 
         results.append({
             "id": m.id,
@@ -85,6 +91,30 @@ def update_machine_status(machine_id: int, payload: MachineStatusUpdate, db: Ses
         raise HTTPException(status_code=404, detail="Machine not found.")
 
     old_status = machine.status
+
+    # If setting to breakdown: mark any active job as interrupted, keep progress and output
+    if payload.status == "breakdown":
+        active_jobs = db.query(ProductionJob).filter(
+            ProductionJob.machine_id == machine.id,
+            ProductionJob.completed_at == None,
+            ProductionJob.status == "active"
+        ).all()
+        for j in active_jobs:
+            j.status = "interrupted"
+
+    # If transitioning from breakdown to idle (repair): block if old job is still active or interrupted
+    if old_status == "breakdown" and payload.status == "idle":
+        pending_job = db.query(ProductionJob).filter(
+            ProductionJob.machine_id == machine.id,
+            ProductionJob.completed_at == None,
+            ProductionJob.status.in_(["active", "interrupted"])
+        ).first()
+        if pending_job:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot set {machine.name} to Idle while Job #{pending_job.id} is still {pending_job.status}. Please reassign or resolve the job before repair."
+            )
+
     machine.status = payload.status
     machine.status_updated_at = datetime.utcnow()
 
@@ -239,3 +269,153 @@ def simulate_telemetry_tick(db: Session = Depends(get_db)):
     
     db.commit()
     return {"status": "success", "updated_jobs": len(updated), "machines": updated}
+
+@router.get("/jobs/{job_id}/reassign-suggestions")
+def get_reassign_suggestions(job_id: int, db: Session = Depends(get_db)):
+    job = db.query(ProductionJob).filter(ProductionJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Production job not found.")
+
+    order = job.order
+    total_m = order.quantity_m if order else 0.0
+    remaining_m = max(0.0, round(total_m * (1.0 - (job.progress_pct / 100.0)), 1)) if order else 0.0
+
+    setting = db.query(Setting).filter(Setting.key == "auto_suggest_reassignment").first()
+    auto_suggest = (setting.value.lower() == "true") if setting else True
+
+    # Candidate machines: same stage, status idle, not current machine, ordered by capacity descending
+    candidates = db.query(Machine).filter(
+        Machine.stage == job.stage,
+        Machine.status == "idle",
+        Machine.id != job.machine_id
+    ).order_by(Machine.capacity_m_per_hour.desc()).all()
+
+    suggestions = []
+    for m in candidates:
+        busy = db.query(ProductionJob).filter(
+            ProductionJob.machine_id == m.id,
+            ProductionJob.completed_at == None,
+            ProductionJob.status.in_(["active", "interrupted"])
+        ).first()
+        if busy:
+            continue
+        est_hours = round(remaining_m / m.capacity_m_per_hour, 1) if m.capacity_m_per_hour > 0 else 0.0
+        suggestions.append({
+            "machine_id": m.id,
+            "machine_name": m.name,
+            "stage": m.stage,
+            "status": m.status,
+            "capacity_m_per_hour": m.capacity_m_per_hour,
+            "remaining_m": remaining_m,
+            "estimated_hours": est_hours
+        })
+
+    return {
+        "job_id": job.id,
+        "current_machine": job.machine.name if job.machine else None,
+        "stage": job.stage,
+        "order_id": job.order_id,
+        "order_number": order.order_number if order else None,
+        "remaining_m": remaining_m,
+        "progress_pct": job.progress_pct,
+        "auto_suggest_reassignment": auto_suggest,
+        "suggestions": suggestions
+    }
+
+@router.post("/jobs/{job_id}/transfer")
+def transfer_production_job(job_id: int, payload: JobTransferRequest, db: Session = Depends(get_db)):
+    old_job = db.query(ProductionJob).filter(ProductionJob.id == job_id).first()
+    if not old_job:
+        raise HTTPException(status_code=404, detail="Production job not found.")
+
+    target_machine = db.query(Machine).filter(Machine.id == payload.target_machine_id).first()
+    if not target_machine:
+        raise HTTPException(status_code=404, detail="Target machine not found.")
+
+    # Validation: target machine must not be breakdown
+    if target_machine.status == "breakdown":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot transfer job to {target_machine.name}: Machine is currently in BREAKDOWN state."
+        )
+
+    # Validation: target machine must be idle
+    if target_machine.status != "idle":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot transfer job to {target_machine.name}: Target machine must be Idle (currently {target_machine.status})."
+        )
+
+    # Validation: stage must match
+    if target_machine.stage != old_job.stage:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stage mismatch: cannot transfer a {old_job.stage} job to a {target_machine.stage} machine ({target_machine.name})."
+        )
+
+    # Validation: target machine must have no active or interrupted job
+    busy_job = db.query(ProductionJob).filter(
+        ProductionJob.machine_id == target_machine.id,
+        ProductionJob.completed_at == None,
+        ProductionJob.status.in_(["active", "interrupted"])
+    ).first()
+    if busy_job:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Target machine {target_machine.name} already has an active job #{busy_job.id}."
+        )
+
+    old_machine = old_job.machine
+    old_machine_name = old_machine.name if old_machine else "Machine"
+    from_name = old_machine_name.split(" (")[0]
+    to_name = target_machine.name.split(" (")[0]
+
+    # Close old job
+    old_job.status = "transferred"
+    old_job.completed_at = datetime.utcnow()
+    # Output produced stays attributed to old machine (old_job.output_today_m is untouched)
+
+    # Create new job for remaining work, carrying over progress
+    new_job = ProductionJob(
+        order_id=old_job.order_id,
+        machine_id=target_machine.id,
+        stage=old_job.stage,
+        progress_pct=old_job.progress_pct,
+        output_today_m=0.0,
+        shift=payload.shift or old_job.shift,
+        operator_id=payload.operator_id or old_job.operator_id,
+        started_at=datetime.utcnow(),
+        status="active",
+        transferred_from_job_id=old_job.id
+    )
+    db.add(new_job)
+    db.flush()
+
+    old_job.transferred_to_job_id = new_job.id
+
+    # Update target machine status to running
+    target_machine.status = "running"
+    target_machine.status_updated_at = datetime.utcnow()
+
+    # Log to audit trail
+    transfer_msg = f"Job moved from {from_name} to {to_name} (breakdown)"
+    db.add(AuditLog(
+        user="Supervisor",
+        action="JOB_TRANSFER",
+        entity="Order",
+        entity_id=old_job.order_id,
+        before_state=from_name,
+        after_state=transfer_msg
+    ))
+
+    db.commit()
+    db.refresh(new_job)
+
+    return {
+        "status": "success",
+        "message": transfer_msg,
+        "old_job_id": old_job.id,
+        "new_job_id": new_job.id,
+        "target_machine": target_machine.name
+    }
+

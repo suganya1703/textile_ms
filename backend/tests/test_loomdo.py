@@ -5,7 +5,7 @@ from backend.app.main import app
 from backend.app.core.database import SessionLocal
 from backend.app.models.quality import Roll
 from backend.app.models.master import Machine, Worker
-from backend.app.models.yarn_order import Order
+from backend.app.models.yarn_order import Order, ProductionJob
 from backend.app.services.grading import calculate_defect_points, evaluate_roll_grade
 
 client = TestClient(app)
@@ -149,3 +149,131 @@ def test_odoo_exports_endpoint():
         assert resp.status_code == 200
         assert "text/csv" in resp.headers["content-type"]
         assert len(resp.text) > 10
+
+def test_machine_breakdown_interrupts_job():
+    db = SessionLocal()
+    # Find an active job and its machine
+    job = db.query(ProductionJob).filter(ProductionJob.completed_at == None, ProductionJob.status == "active").first()
+    assert job is not None
+    m = db.query(Machine).filter(Machine.id == job.machine_id).first()
+    assert m is not None
+    db.close()
+
+    orig_progress = job.progress_pct
+    orig_output = job.output_today_m
+
+    # Set machine to breakdown
+    resp = client.patch(f"/api/production/machines/{m.id}/status", json={"status": "breakdown"})
+    assert resp.status_code == 200
+
+    # Check that job is now marked interrupted and progress/output are preserved
+    db = SessionLocal()
+    j = db.query(ProductionJob).filter(ProductionJob.id == job.id).first()
+    assert j.status == "interrupted"
+    assert j.progress_pct == orig_progress
+    assert j.output_today_m == orig_output
+    db.close()
+
+def test_transfer_invalid_targets():
+    db = SessionLocal()
+    # Find an interrupted job
+    job = db.query(ProductionJob).filter(ProductionJob.status == "interrupted").first()
+    broken_machine = db.query(Machine).filter(Machine.status == "breakdown").first()
+    diff_stage_machine = db.query(Machine).filter(Machine.stage != job.stage).first()
+    running_machine = db.query(Machine).filter(Machine.status == "running").first()
+    db.close()
+
+    # Invalid 1: Target is in breakdown
+    resp1 = client.post(f"/api/production/jobs/{job.id}/transfer", json={"target_machine_id": broken_machine.id})
+    assert resp1.status_code == 400
+    assert "BREAKDOWN" in resp1.json()["detail"]
+
+    # Invalid 2: Target is not idle (running)
+    resp2 = client.post(f"/api/production/jobs/{job.id}/transfer", json={"target_machine_id": running_machine.id})
+    assert resp2.status_code == 400
+    assert "must be Idle" in resp2.json()["detail"]
+
+    # Invalid 3: Target is different stage
+    resp3 = client.post(f"/api/production/jobs/{job.id}/transfer", json={"target_machine_id": diff_stage_machine.id})
+    assert resp3.status_code == 400
+    assert "Stage mismatch" in resp3.json()["detail"] or "must be Idle" in resp3.json()["detail"]
+
+def test_transfer_job_success_and_timeline():
+    db = SessionLocal()
+    job = db.query(ProductionJob).filter(ProductionJob.status == "interrupted").first()
+    # Find a valid idle machine with same stage
+    target = db.query(Machine).filter(Machine.stage == job.stage, Machine.status == "idle").first()
+    db.close()
+    assert target is not None
+
+    # Suggestions endpoint test
+    sugg_resp = client.get(f"/api/production/jobs/{job.id}/reassign-suggestions")
+    assert sugg_resp.status_code == 200
+    sugg_data = sugg_resp.json()
+    assert len(sugg_data["suggestions"]) > 0
+    assert sugg_data["auto_suggest_reassignment"] is True
+    assert "remaining_m" in sugg_data
+
+    # Execute transfer
+    transfer_resp = client.post(f"/api/production/jobs/{job.id}/transfer", json={"target_machine_id": target.id})
+    assert transfer_resp.status_code == 200
+    data = transfer_resp.json()
+    assert data["status"] == "success"
+    new_job_id = data["new_job_id"]
+
+    # Verify DB states
+    db = SessionLocal()
+    old_j = db.query(ProductionJob).filter(ProductionJob.id == job.id).first()
+    new_j = db.query(ProductionJob).filter(ProductionJob.id == new_job_id).first()
+    t_m = db.query(Machine).filter(Machine.id == target.id).first()
+
+    assert old_j.status == "transferred"
+    assert old_j.completed_at is not None
+    assert old_j.transferred_to_job_id == new_j.id
+    assert new_j.status == "active"
+    assert new_j.transferred_from_job_id == old_j.id
+    assert new_j.progress_pct == old_j.progress_pct
+    assert new_j.output_today_m == 0.0
+    assert t_m.status == "running"
+
+    # Verify order activity timeline
+    order_resp = client.get(f"/api/orders/{old_j.order_id}")
+    assert order_resp.status_code == 200
+    timeline = order_resp.json().get("activity_timeline", [])
+    assert any("Job moved from" in act["message"] for act in timeline)
+    db.close()
+
+def test_repaired_machine_behavior():
+    db = SessionLocal()
+    # Find machine from previous test that was breakdown and whose job was transferred
+    job = db.query(ProductionJob).filter(ProductionJob.status == "transferred").order_by(ProductionJob.id.desc()).first()
+    broken_m = db.query(Machine).filter(Machine.id == job.machine_id).first()
+    db.close()
+
+    # Now that the job was transferred, repairing broken_m to idle must succeed
+    resp = client.patch(f"/api/production/machines/{broken_m.id}/status", json={"status": "idle"})
+    assert resp.status_code == 200
+
+    # Verify machine is idle and shows no active job
+    machines_resp = client.get("/api/production/machines")
+    m_info = next(item for item in machines_resp.json()["machines"] if item["id"] == broken_m.id)
+    assert m_info["status"] == "idle"
+    assert m_info["current_job"] is None
+
+def test_repaired_machine_blocked_when_job_interrupted():
+    db = SessionLocal()
+    # Find an active job
+    job = db.query(ProductionJob).filter(ProductionJob.completed_at == None, ProductionJob.status == "active").first()
+    assert job is not None
+    m = db.query(Machine).filter(Machine.id == job.machine_id).first()
+    db.close()
+
+    # Set machine to breakdown -> job becomes interrupted
+    client.patch(f"/api/production/machines/{m.id}/status", json={"status": "breakdown"})
+
+    # Attempt to repair to idle while job is still interrupted -> MUST FAIL with HTTP 400
+    resp = client.patch(f"/api/production/machines/{m.id}/status", json={"status": "idle"})
+    assert resp.status_code == 400
+    assert "reassign or resolve" in resp.json()["detail"].lower() or "interrupted" in resp.json()["detail"].lower()
+
+

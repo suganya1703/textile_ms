@@ -57,6 +57,9 @@ class ProductionJob(Base):
     operator_id = Column(Integer, ForeignKey("workers.id"), nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
+    status = Column(String, default="active")  # active, interrupted, transferred, completed
+    transferred_from_job_id = Column(Integer, ForeignKey("production_jobs.id"), nullable=True)
+    transferred_to_job_id = Column(Integer, ForeignKey("production_jobs.id"), nullable=True)
 
     order = relationship("Order", back_populates="production_jobs")
     machine = relationship("Machine", back_populates="jobs")

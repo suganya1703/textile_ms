@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import {
   Card,
@@ -44,6 +45,18 @@ export function ProductionView() {
   const [incrementM, setIncrementM] = useState('');
   const [updating, setUpdating] = useState(false);
   const [simulatingTick, setSimulatingTick] = useState(false);
+
+  // Reassign Interrupted Job Modal State
+  const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
+  const [reassigningJob, setReassigningJob] = useState(null);
+  const [reassignMachine, setReassignMachine] = useState(null);
+  const [reassignData, setReassignData] = useState(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [selectedTargetMachineId, setSelectedTargetMachineId] = useState('');
+  const [reassignOperatorId, setReassignOperatorId] = useState('');
+  const [reassignShift, setReassignShift] = useState('morning');
+  const [transferring, setTransferring] = useState(false);
+
 
   const fetchMachines = async (showLoading = false) => {
     try {
@@ -164,6 +177,50 @@ export function ProductionView() {
     }
   };
 
+  const handleOpenReassignModal = async (machine, job) => {
+    setReassignMachine(machine);
+    setReassigningJob(job);
+    setIsReassignModalOpen(true);
+    setLoadingSuggestions(true);
+    setSelectedTargetMachineId('');
+    try {
+      const res = await api.getReassignSuggestions(job.job_id);
+      setReassignData(res);
+      if (res.suggestions && res.suggestions.length > 0) {
+        setSelectedTargetMachineId(String(res.suggestions[0].machine_id));
+      }
+      setReassignOperatorId(workers[0]?.id || '');
+      setReassignShift(job.shift || 'morning');
+    } catch (err) {
+      showToast('Failed to load suggestions: ' + err.message, 'error');
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const handleTransferSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedTargetMachineId) {
+      showToast('Please select a target idle machine', 'warning');
+      return;
+    }
+    try {
+      setTransferring(true);
+      const res = await api.transferJob(reassigningJob.job_id, {
+        target_machine_id: Number(selectedTargetMachineId),
+        operator_id: reassignOperatorId ? Number(reassignOperatorId) : undefined,
+        shift: reassignShift
+      });
+      showToast(res.message || 'Job transferred successfully!', 'success');
+      setIsReassignModalOpen(false);
+      fetchMachines(false);
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setTransferring(false);
+    }
+  };
+
   // Enforce Status Consistency: Running machines have an active job; Idle machines show "No active job"
   const processedMachines = machines.map((m) => {
     let effectiveStatus = m.status;
@@ -187,10 +244,11 @@ export function ProductionView() {
   const renderMachineCard = (m) => {
     const isBreakdown = m.effectiveStatus === 'breakdown';
     const isRunning = m.effectiveStatus === 'running';
-    const job = isRunning ? m.current_job : null;
+    const job = m.current_job;
+    const isInterrupted = isBreakdown && job;
 
     const progressPct = job ? Math.min(100, Math.round(job.progress_pct || 0)) : 0;
-    const metresToday = job ? Math.round(job.produced_m || 0) : 0;
+    const metresToday = job ? Math.round(job.output_today_m ?? job.produced_m ?? 0) : 0;
     const shift = job?.shift || 'day';
 
     const borderClass = isRunning
@@ -215,11 +273,29 @@ export function ProductionView() {
           </Badge>
         </div>
 
+        {/* Breakdown Interrupted Job Banner */}
+        {isInterrupted && (
+          <div className="p-2.5 rounded-[8px] bg-rose-50 border border-rose-200 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-700">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>Job interrupted, reassign</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleOpenReassignModal(m, job)}
+              className="text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-[6px] transition-colors shadow-xs"
+            >
+              Reassign
+            </button>
+          </div>
+        )}
+
         {/* 'Order #n • stage' or 'No active job' in grey italic */}
         <div className="text-xs">
           {job ? (
             <div className="font-medium text-[#111827]">
               Order #{job.order_number} • <span className="text-[#6B7280] capitalize">{m.stage}</span>
+              {isInterrupted && <span className="ml-1 text-rose-600 text-[11px] font-normal">(Interrupted)</span>}
             </div>
           ) : (
             <div className="text-[#9CA3AF] italic">No active job</div>
@@ -230,7 +306,7 @@ export function ProductionView() {
         <div>
           <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-1.5">
             <div
-              className="h-full bg-[#714B67] transition-all duration-300"
+              className={`h-full transition-all duration-300 ${isBreakdown ? 'bg-rose-500' : 'bg-[#714B67]'}`}
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -247,15 +323,26 @@ export function ProductionView() {
 
         {/* Buttons: Assign Job / Status */}
         <div className="grid grid-cols-2 gap-2 pt-1">
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={isBreakdown}
-            onClick={() => handleOpenAssignModal(m)}
-            className="w-full text-xs"
-          >
-            Assign Job
-          </Button>
+          {isInterrupted ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleOpenReassignModal(m, job)}
+              className="w-full text-xs bg-rose-600 hover:bg-rose-700 text-white border-none"
+            >
+              Reassign
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={isBreakdown}
+              onClick={() => handleOpenAssignModal(m)}
+              className="w-full text-xs"
+            >
+              Assign Job
+            </Button>
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -437,6 +524,131 @@ export function ProductionView() {
             </Button>
             <Button variant="primary" type="submit" loading={updating}>
               Save Updates
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Reassign Job Modal */}
+      <Modal
+        isOpen={isReassignModalOpen}
+        onClose={() => setIsReassignModalOpen(false)}
+        title="Reassign Interrupted Job"
+        subtitle={`Order #${reassigningJob?.order_number || ''} from ${reassignMachine?.name || ''}`}
+      >
+        <form onSubmit={handleTransferSubmit} className="space-y-4">
+          <div className="p-3 bg-gray-50 rounded-[8px] border border-gray-200 text-xs space-y-1.5">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Order:</span>
+              <span className="font-semibold text-gray-900">#{reassigningJob?.order_number}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Stage:</span>
+              <span className="capitalize font-semibold text-gray-900">{reassigningJob?.stage}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Carried Over Progress:</span>
+              <span className="font-mono font-semibold text-gray-900">{reassigningJob?.progress_pct}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Output on Broken Machine:</span>
+              <span className="font-mono text-gray-700">{formatNumber(reassigningJob?.output_today_m || 0)} m (retained on {reassignMachine?.name})</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Remaining Metres:</span>
+              <span className="font-mono font-bold text-indigo-700">{formatNumber(reassignData?.remaining_m || 0)} m</span>
+            </div>
+          </div>
+
+          {loadingSuggestions ? (
+            <div className="text-center py-6 text-xs text-gray-500">Finding candidate idle machines...</div>
+          ) : reassignData?.suggestions?.length > 0 ? (
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-gray-700">
+                Candidate Machines ({reassigningJob?.stage}, Idle, Sorted by Capacity)
+              </label>
+              <div className="space-y-2 max-h-56 overflow-y-auto">
+                {reassignData.suggestions.map((cand) => {
+                  const isSelected = String(cand.machine_id) === String(selectedTargetMachineId);
+                  return (
+                    <div
+                      key={cand.machine_id}
+                      onClick={() => setSelectedTargetMachineId(String(cand.machine_id))}
+                      className={`p-3 rounded-[8px] border text-xs cursor-pointer transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? 'border-[#2F3E8F] bg-[#2F3E8F]/5'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-bold text-gray-900 flex items-center gap-1.5">
+                          <input
+                            type="radio"
+                            name="targetMachine"
+                            checked={isSelected}
+                            onChange={() => setSelectedTargetMachineId(String(cand.machine_id))}
+                            className="text-[#2F3E8F]"
+                          />
+                          <span>{cand.machine_name}</span>
+                        </div>
+                        <div className="text-[11px] text-gray-500 mt-0.5">
+                          Capacity: <span className="font-medium text-gray-800">{cand.capacity_m_per_hour} m/hr</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-[#2F3E8F] font-mono">
+                          ~{cand.estimated_hours} hrs
+                        </div>
+                        <div className="text-[11px] text-gray-500">to finish {formatNumber(cand.remaining_m)} m</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-[8px] text-xs text-amber-800">
+              No idle candidate machines found with stage &apos;{reassigningJob?.stage}&apos;. Please wait or free up an idle machine.
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Assign Operator">
+              <Select
+                value={reassignOperatorId}
+                onChange={(e) => setReassignOperatorId(e.target.value)}
+              >
+                {workers.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name} ({w.role})
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Shift">
+              <Select
+                value={reassignShift}
+                onChange={(e) => setReassignShift(e.target.value)}
+              >
+                <option value="morning">Morning</option>
+                <option value="evening">Evening</option>
+                <option value="night">Night</option>
+              </Select>
+            </FormField>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#F3F4F6]">
+            <Button variant="secondary" type="button" onClick={() => setIsReassignModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              loading={transferring}
+              disabled={!selectedTargetMachineId || !reassignData?.suggestions?.length}
+            >
+              Confirm Transfer
             </Button>
           </div>
         </form>

@@ -50,6 +50,8 @@ export const api = {
   assignJob: (payload) => apiRequest('/production/jobs/assign', { method: 'POST', body: JSON.stringify(payload) }),
   updateJobProgress: (id, payload) => apiRequest(`/production/jobs/${id}/progress`, { method: 'PATCH', body: JSON.stringify(payload) }),
   simulateTick: () => apiRequest('/production/telemetry-tick', { method: 'POST' }),
+  getReassignSuggestions: (jobId) => apiRequest(`/production/jobs/${jobId}/reassign-suggestions`),
+  transferJob: (jobId, payload) => apiRequest(`/production/jobs/${jobId}/transfer`, { method: 'POST', body: JSON.stringify(payload) }),
 
   // Quality
   getRolls: (params = '') => apiRequest(`/quality/rolls${params ? '?' + params : ''}`),

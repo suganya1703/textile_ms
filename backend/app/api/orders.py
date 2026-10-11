@@ -85,6 +85,23 @@ def get_order_details(order_id: int, db: Session = Depends(get_db)):
         for r in order.rolls
     ]
 
+    # Audit log activities
+    audit_logs = db.query(AuditLog).filter(
+        AuditLog.entity == "Order",
+        AuditLog.entity_id == order.id
+    ).order_by(AuditLog.timestamp.desc()).all()
+
+    activity_timeline = [
+        {
+            "id": a.id,
+            "user": a.user,
+            "action": a.action,
+            "message": a.after_state,
+            "timestamp": a.timestamp.isoformat()
+        }
+        for a in audit_logs
+    ]
+
     return {
         "id": order.id,
         "order_number": order.order_number,
@@ -101,7 +118,8 @@ def get_order_details(order_id: int, db: Session = Depends(get_db)):
         "price_per_m": order.price_per_m,
         "status": order.status,
         "whatsapp_message": whatsapp_message,
-        "rolls": rolls_summary
+        "rolls": rolls_summary,
+        "activity_timeline": activity_timeline
     }
 
 @router.get("/track/{order_ref}")

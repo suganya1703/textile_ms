@@ -43,7 +43,8 @@ def seed():
         ("four_point_grade_b_max", "40.0", "Max defect points per 100 sq yd for Grade B concession (ASTM D5430)"),
         ("expected_yield_ratio", "0.95", "Expected fabric yield ratio from yarn (0.95 = 5% normal process loss)"),
         ("tax_rate_pct", "5.0", "Applicable GST tax rate percentage on fabric dispatches"),
-        ("four_point_standard_source", "ASTM D5430 - 4-Point System (American Society for Testing and Materials)", "Standard reference")
+        ("four_point_standard_source", "ASTM D5430 - 4-Point System (American Society for Testing and Materials)", "Standard reference"),
+        ("auto_suggest_reassignment", "true", "Automatically suggest candidate idle machines on breakdown")
     ]
     for k, v, d in settings_data:
         db.add(Setting(key=k, value=v, description=d))
@@ -164,19 +165,19 @@ def seed():
     # 8. Production Jobs
     jobs = [
         # Job on W-01 for ORD-003
-        ProductionJob(order_id=3, machine_id=4, stage="weaving", progress_pct=42.0, output_today_m=19.0, shift="morning", operator_id=1, started_at=datetime.utcnow() - timedelta(days=2)),
+        ProductionJob(order_id=3, machine_id=4, stage="weaving", progress_pct=42.0, output_today_m=19.0, shift="morning", operator_id=1, started_at=datetime.utcnow() - timedelta(days=2), status="active"),
         # Job on W-02 for ORD-008 (Loss-making order)
-        ProductionJob(order_id=8, machine_id=5, stage="weaving", progress_pct=35.0, output_today_m=28.0, shift="morning", operator_id=2, started_at=datetime.utcnow() - timedelta(days=3)),
+        ProductionJob(order_id=8, machine_id=5, stage="weaving", progress_pct=35.0, output_today_m=28.0, shift="morning", operator_id=2, started_at=datetime.utcnow() - timedelta(days=3), status="active"),
         # Job on W-03 (High Defect Loom) for ORD-005
-        ProductionJob(order_id=5, machine_id=6, stage="weaving", progress_pct=68.0, output_today_m=22.0, shift="morning", operator_id=3, started_at=datetime.utcnow() - timedelta(days=3)),
+        ProductionJob(order_id=5, machine_id=6, stage="weaving", progress_pct=68.0, output_today_m=22.0, shift="morning", operator_id=3, started_at=datetime.utcnow() - timedelta(days=3), status="active"),
         # Job on D-01 for ORD-004
-        ProductionJob(order_id=4, machine_id=9, stage="dyeing", progress_pct=55.0, output_today_m=48.0, shift="morning", operator_id=9, started_at=datetime.utcnow() - timedelta(days=1)),
+        ProductionJob(order_id=4, machine_id=9, stage="dyeing", progress_pct=55.0, output_today_m=48.0, shift="morning", operator_id=9, started_at=datetime.utcnow() - timedelta(days=1), status="active"),
         # Completed Job on W-01 for ORD-001
-        ProductionJob(order_id=1, machine_id=4, stage="weaving", progress_pct=100.0, output_today_m=120.0, shift="morning", operator_id=1, started_at=datetime.utcnow() - timedelta(days=6), completed_at=datetime.utcnow() - timedelta(days=3)),
+        ProductionJob(order_id=1, machine_id=4, stage="weaving", progress_pct=100.0, output_today_m=120.0, shift="morning", operator_id=1, started_at=datetime.utcnow() - timedelta(days=6), completed_at=datetime.utcnow() - timedelta(days=3), status="completed"),
         # Completed Job on W-02 for ORD-002
-        ProductionJob(order_id=2, machine_id=5, stage="weaving", progress_pct=100.0, output_today_m=100.0, shift="morning", operator_id=2, started_at=datetime.utcnow() - timedelta(days=5), completed_at=datetime.utcnow() - timedelta(days=2)),
+        ProductionJob(order_id=2, machine_id=5, stage="weaving", progress_pct=100.0, output_today_m=100.0, shift="morning", operator_id=2, started_at=datetime.utcnow() - timedelta(days=5), completed_at=datetime.utcnow() - timedelta(days=2), status="completed"),
         # Completed Job on W-01 for ORD-006 (Dye-lot clash order)
-        ProductionJob(order_id=6, machine_id=4, stage="weaving", progress_pct=100.0, output_today_m=95.0, shift="morning", operator_id=1, started_at=datetime.utcnow() - timedelta(days=4), completed_at=datetime.utcnow() - timedelta(days=1)),
+        ProductionJob(order_id=6, machine_id=4, stage="weaving", progress_pct=100.0, output_today_m=95.0, shift="morning", operator_id=1, started_at=datetime.utcnow() - timedelta(days=4), completed_at=datetime.utcnow() - timedelta(days=1), status="completed"),
     ]
     db.add_all(jobs)
     db.commit()
