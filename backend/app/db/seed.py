@@ -19,7 +19,7 @@ import random
 from sqlalchemy.orm import Session
 from backend.app.core.database import SessionLocal, engine, Base
 from backend.app.models.master import Supplier, Buyer, Machine, Worker, Setting
-from backend.app.models.yarn_order import YarnBatch, Order, ProductionJob, YarnConsumption
+from backend.app.models.yarn_order import YarnBatch, Order, ProductionJob, YarnConsumption, YarnDamageRecord, SupplierClaim
 from backend.app.models.quality import Roll, Defect
 from backend.app.models.dispatch_finance import Dispatch, Invoice, Payment, Expense
 from backend.app.models.workforce import Attendance, JobAssignment, Wage
@@ -572,9 +572,49 @@ def seed():
         for s in shifts:
             generate_shift_wages(db, cur_date, s)
 
-    # 13. Audit Trail logs
+    # 13. Planted Story: 50 kg Insect Damage on Batch YB-2026-0410
+    # 50kg damaged: 20kg salvaged, 20kg waste sold (₹900), 10kg returned to supplier (draft claim)
+    damage_seed = YarnDamageRecord(
+        yarn_batch_id=1,  # YB-2026-0410
+        kg_damaged=50.0,
+        reason="insect damage",
+        note="Outer layer yarn cones affected by silverfish during monsoon storage in Bay 2",
+        reported_by="K. Murugesan",
+        salvaged_kg=20.0,
+        waste_kg=20.0,
+        waste_sale_amount=900.0,
+        supplier_return_kg=10.0,
+        destroyed_kg=0.0,
+        created_at=datetime.utcnow() - timedelta(days=4)
+    )
+    db.add(damage_seed)
+
+    # Net loss expense: (30kg non-salvaged * ₹255) - ₹900 = ₹6,750
+    yarn_loss_exp = Expense(
+        category="yarn_loss",
+        supplier_id=1,
+        amount=6750.0,
+        description="Yarn damage loss: 50kg insect damage on YB-2026-0410 (20kg salvaged, 20kg waste sold, 10kg return)",
+        incurred_at=datetime.utcnow() - timedelta(days=4)
+    )
+    db.add(yarn_loss_exp)
+
+    # Draft supplier claim for 10kg returned
+    claim_seed = SupplierClaim(
+        supplier_id=1,
+        yarn_batch_id=1,
+        kg=10.0,
+        claim_amount=2550.0,
+        reason="Insect damage - 10kg defective cones returned to supplier",
+        status="Draft",
+        created_at=datetime.utcnow() - timedelta(days=4)
+    )
+    db.add(claim_seed)
+
+    # 14. Audit Trail logs
     audits = [
         AuditLog(user="K. Murugesan", action="CREATE_BATCH", entity="YarnBatch", entity_id=1, before_state=None, after_state="Received 800kg Cotton 40s from Coimbatore Yarn Traders"),
+        AuditLog(user="K. Murugesan", action="YARN_DAMAGE_WRITEOFF", entity="YarnBatch", entity_id=1, before_state="kg_remaining: 450.0", after_state="kg_remaining: 420.0; Damaged: 50kg (20kg salvaged, 20kg waste sold, 10kg returned); net loss ₹6,750.00"),
         AuditLog(user="Venkatesh K.", action="ASSIGN_JOB", entity="ProductionJob", entity_id=1, before_state=None, after_state="Assigned Order ORD-2026-003 to Loom W-01"),
         AuditLog(user="D. Arumugam", action="REPORT_BREAKDOWN", entity="Machine", entity_id=7, before_state="running", after_state="Loom W-04 motor bearing seized. Marked BREAKDOWN."),
         AuditLog(user="Anitha Parthiban", action="INSPECT_ROLL", entity="Roll", entity_id=30, before_state="pending", after_state="Evaluated Roll on Perch Table P-01: Uneven weave snarls detected. Points: 34 -> Grade B (concession)."),

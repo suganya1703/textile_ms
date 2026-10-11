@@ -77,6 +77,42 @@ class OrderFeasibilityCheckRequest(BaseModel):
     quantity_m: float = Field(gt=0)
     yarn_type: Optional[str] = None
 
+class YarnDamageCreate(BaseModel):
+    kg_damaged: float = Field(gt=0, description="Damaged kg must be greater than 0")
+    reason: str = Field(min_length=1, description="Damage reason is required")
+    note: Optional[str] = None
+    reported_by: str = "Store Incharge"
+    salvaged_kg: float = Field(default=0.0, ge=0)
+    waste_kg: float = Field(default=0.0, ge=0)
+    waste_sale_amount: float = Field(default=0.0, ge=0)
+    supplier_return_kg: float = Field(default=0.0, ge=0)
+    destroyed_kg: float = Field(default=0.0, ge=0)
+
+class SupplierClaimCreate(BaseModel):
+    supplier_id: int
+    yarn_batch_id: int
+    kg: float = Field(gt=0)
+    claim_amount: float = Field(ge=0)
+    reason: str
+    status: str = "Draft"
+
+class SupplierClaimStatusUpdate(BaseModel):
+    status: str
+
+class SupplierClaimResponse(BaseModel):
+    id: int
+    supplier_id: int
+    supplier_name: Optional[str] = None
+    yarn_batch_id: int
+    batch_code: Optional[str] = None
+    kg: float
+    claim_amount: float
+    reason: str
+    status: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
 # Order Schemas
 class OrderCreate(BaseModel):
     buyer_id: int

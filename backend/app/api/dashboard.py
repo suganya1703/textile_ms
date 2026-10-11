@@ -7,7 +7,7 @@ from backend.app.core.database import get_db
 from backend.app.models.quality import Roll
 from backend.app.models.master import Machine, Setting
 from backend.app.models.yarn_order import Order
-from backend.app.models.dispatch_finance import Invoice, Payment
+from backend.app.models.dispatch_finance import Invoice, Payment, Expense
 from backend.app.models.workforce import Wage
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -59,10 +59,13 @@ def get_owner_dashboard(db: Session = Depends(get_db)):
 
     # 5. Rough Monthly P&L
     # Revenue = total invoiced
-    # Expenses = Yarn (approx 45% of invoiced), Labour (total wages), Overhead (approx ₹35,000)
+    # Expenses = Yarn (approx 45% of invoiced), Labour (total wages), Overhead (approx ₹35,000), Yarn Loss
+    yarn_loss_records = db.query(Expense).filter(Expense.category == "yarn_loss").all()
+    yarn_loss_expense = sum(e.amount for e in yarn_loss_records)
+
     estimated_yarn_expense = total_invoiced * 0.45
     estimated_overhead_expense = 35000.0
-    total_operational_expense = round(estimated_yarn_expense + total_wages_paid + estimated_overhead_expense, 2)
+    total_operational_expense = round(estimated_yarn_expense + total_wages_paid + estimated_overhead_expense + yarn_loss_expense, 2)
     net_operating_profit = round(total_invoiced - total_operational_expense, 2)
 
     # 6. Loss-making order margin alerts
@@ -98,6 +101,7 @@ def get_owner_dashboard(db: Session = Depends(get_db)):
         "pl_statement": {
             "gross_revenue": round(total_invoiced, 2),
             "yarn_expense": round(estimated_yarn_expense, 2),
+            "yarn_loss": round(yarn_loss_expense, 2),
             "direct_labour_wages": round(order_direct_labour, 2),
             "idle_labour_cost": round(idle_labour_cost, 2),
             "general_labour_wages": round(general_labour_cost, 2),

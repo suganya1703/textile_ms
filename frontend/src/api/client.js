@@ -43,6 +43,11 @@ export const api = {
   getYarnStockSummary: () => apiRequest('/inventory/stock-summary'),
   logYarnArrival: (payload) => apiRequest('/inventory/yarn/arrival', { method: 'POST', body: JSON.stringify(payload) }),
   checkYarnFeasibility: (payload) => apiRequest('/inventory/check-feasibility', { method: 'POST', body: JSON.stringify(payload) }),
+  reportYarnDamage: (batchId, payload) => apiRequest(`/inventory/yarn/${batchId}/damage`, { method: 'POST', body: JSON.stringify(payload) }),
+  getYarnBatchLedger: (batchId) => apiRequest(`/inventory/yarn/${batchId}/ledger`),
+  getSupplierClaims: () => apiRequest('/inventory/supplier-claims'),
+  createSupplierClaim: (payload) => apiRequest('/inventory/supplier-claims', { method: 'POST', body: JSON.stringify(payload) }),
+  updateSupplierClaimStatus: (claimId, status) => apiRequest(`/inventory/supplier-claims/${claimId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 
   // Production
   getMachines: () => apiRequest('/production/machines'),

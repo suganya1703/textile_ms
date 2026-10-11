@@ -6,8 +6,8 @@ from typing import List
 
 from backend.app.core.database import get_db
 from backend.app.models.quality import Roll, Defect
-from backend.app.models.master import Machine, Setting
-from backend.app.models.yarn_order import Order, YarnBatch, YarnConsumption
+from backend.app.models.master import Machine, Setting, Supplier
+from backend.app.models.yarn_order import Order, YarnBatch, YarnConsumption, YarnDamageRecord
 from backend.app.services.delay_risk import evaluate_order_delay_risk
 
 router = APIRouter(prefix="/insights", tags=["Insights"])
@@ -87,6 +87,42 @@ def get_root_cause_insights(db: Session = Depends(get_db)):
                 "action": "Audit night perch inspection lighting, loom tension maintenance, and supervisor rounds.",
                 "entity": "Night Shift"
             })
+
+    # 4. Supplier Yarn Damage Rate (group-by queries)
+    supplier_received = db.query(
+        Supplier.id,
+        Supplier.name,
+        func.sum(YarnBatch.kg_received).label("total_received")
+    ).join(YarnBatch, YarnBatch.supplier_id == Supplier.id
+    ).group_by(Supplier.id, Supplier.name).all()
+
+    supplier_damaged = db.query(
+        Supplier.id,
+        Supplier.name,
+        func.sum(YarnDamageRecord.kg_damaged).label("total_damaged")
+    ).join(YarnBatch, YarnBatch.supplier_id == Supplier.id
+    ).join(YarnDamageRecord, YarnDamageRecord.yarn_batch_id == YarnBatch.id
+    ).group_by(Supplier.id, Supplier.name).all()
+
+    damaged_by_supplier = {row[0]: (row[1], float(row[2] or 0.0)) for row in supplier_damaged}
+    total_mill_received = sum(float(r.total_received or 0.0) for r in supplier_received)
+    total_mill_damaged = sum(amt for _, amt in damaged_by_supplier.values())
+    avg_damage_pct = (total_mill_damaged / total_mill_received * 100) if total_mill_received > 0 else 1.0
+
+    for s_id, s_name, rec_kg in supplier_received:
+        rec_kg = float(rec_kg or 0.0)
+        _, dmg_kg = damaged_by_supplier.get(s_id, (s_name, 0.0))
+        if rec_kg > 0 and dmg_kg > 0:
+            supp_damage_pct = (dmg_kg / rec_kg) * 100
+            if supp_damage_pct > avg_damage_pct:
+                insights.append({
+                    "category": "supplier_damage_anomaly",
+                    "severity": "high" if supp_damage_pct >= 5.0 else "medium",
+                    "title": f"High Yarn Damage Rate from {s_name}",
+                    "statement": f"Supplier {s_name} batches have {supp_damage_pct:.1f}% damage versus {avg_damage_pct:.1f}% average.",
+                    "action": f"Quarantine sub-standard lots from {s_name} and enforce debit claims for damaged yarn.",
+                    "entity": s_name
+                })
 
     return {"insights": insights}
 

@@ -19,7 +19,16 @@ import { api } from '../api/client';
 
 export function InsightsView() {
   const [loading, setLoading] = useState(false);
+  const [anomalies, setAnomalies] = useState([]);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    api.getAnomalies()
+      .then((res) => {
+        if (res?.insights) setAnomalies(res.insights);
+      })
+      .catch((err) => console.error('Failed to load insights anomalies:', err));
+  }, []);
 
   // Mini-simulator state
   const [simForm, setSimForm] = useState({
@@ -170,17 +179,33 @@ export function InsightsView() {
 
       {/* Four Stacked White Cards */}
       <div className="space-y-6">
-        {/* Card 1: Defect Root Cause */}
+        {/* Card 1: Defect Root Cause & Supplier Anomalies */}
         <Card>
           <CardHeader
-            title="Defect Root Cause"
-            subtitle="Correlates perch defect coordinates against loom mechanics and operator shifts"
-            action={<Badge variant="primary">ASTM Correlation</Badge>}
+            title="Root Cause & Supplier Defect Diagnostics"
+            subtitle="Correlates perch defect coordinates, machine telemetry, and supplier yarn damage"
+            action={<Badge variant="primary">Rule-Based Insights</Badge>}
           />
           <CardContent className="space-y-4 pt-1">
             <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-[8px] text-amber-950 text-xs sm:text-sm font-medium leading-relaxed">
               “Loom W-03 produced 72% of all uneven weave defects during the night shift due to warp tension roller slippage. Re-align warp let-off motion before mounting the next beam.”
             </div>
+
+            {/* Live Anomalies statements from group-by diagnostic engine */}
+            {anomalies.map((anom, idx) => (
+              <div key={idx} className="p-4 bg-rose-50/70 border border-rose-200 rounded-[8px] text-rose-950 space-y-1.5 text-xs sm:text-sm">
+                <div className="flex items-center justify-between">
+                  <strong className="font-semibold text-rose-900">{anom.title}</strong>
+                  <Badge variant={anom.severity === 'high' ? 'breakdown' : 'warning'}>{anom.severity?.toUpperCase()}</Badge>
+                </div>
+                <p className="font-medium">“{anom.statement}”</p>
+                {anom.action && (
+                  <p className="text-[12px] text-rose-800">
+                    <strong>Suggested Action:</strong> {anom.action}
+                  </p>
+                )}
+              </div>
+            ))}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB] flex items-center justify-between">

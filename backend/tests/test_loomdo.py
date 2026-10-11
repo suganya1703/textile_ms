@@ -10,6 +10,11 @@ from backend.app.services.grading import calculate_defect_points, evaluate_roll_
 
 client = TestClient(app)
 
+@pytest.fixture(scope="session", autouse=True)
+def setup_seed():
+    from backend.app.db.seed import seed
+    seed()
+
 def test_astm_four_point_grading_logic():
     # Holes: <= 1 in -> 2 pts, > 1 in -> 4 pts
     assert calculate_defect_points("hole", 0.5) == 2
@@ -391,6 +396,115 @@ def test_buyer_360_staff_view():
     assert "risk_level" in ord0["delay_risk"]
     assert "status_message" in ord0
     assert "Your order" in ord0["status_message"]
+
+def test_yarn_damage_split_must_equal_damaged_kg():
+    resp = client.post("/api/inventory/yarn/2/damage", json={
+        "kg_damaged": 50.0,
+        "reason": "moisture",
+        "reported_by": "K. Murugesan",
+        "salvaged_kg": 15.0,
+        "waste_kg": 15.0,
+        "waste_sale_amount": 200.0,
+        "supplier_return_kg": 0.0,
+        "destroyed_kg": 0.0
+    })
+    assert resp.status_code == 400
+    assert "must add up to the damaged kg" in resp.json()["detail"]
+
+def test_yarn_damage_cannot_exceed_remaining_stock():
+    batch_res = client.get("/api/inventory/yarn").json()
+    target_batch = [b for b in batch_res if b["id"] == 2][0]
+    excessive_kg = target_batch["kg_remaining"] + 500.0
+
+    resp = client.post("/api/inventory/yarn/2/damage", json={
+        "kg_damaged": excessive_kg,
+        "reason": "wrong count",
+        "reported_by": "Store Incharge",
+        "salvaged_kg": excessive_kg,
+        "waste_kg": 0.0,
+        "waste_sale_amount": 0.0,
+        "supplier_return_kg": 0.0,
+        "destroyed_kg": 0.0
+    })
+    assert resp.status_code == 400
+    assert "cannot exceed remaining batch stock" in resp.json()["detail"]
+
+def test_salvaged_yarn_returns_to_stock():
+    batches = client.get("/api/inventory/yarn").json()
+    target = [b for b in batches if b["id"] == 4][0]
+    stock_before = target["kg_remaining"]
+
+    damaged_kg = 40.0
+    salvaged_kg = 15.0
+    waste_kg = 25.0
+
+    resp = client.post("/api/inventory/yarn/4/damage", json={
+        "kg_damaged": damaged_kg,
+        "reason": "transit damage",
+        "reported_by": "K. Murugesan",
+        "salvaged_kg": salvaged_kg,
+        "waste_kg": waste_kg,
+        "waste_sale_amount": 500.0,
+        "supplier_return_kg": 0.0,
+        "destroyed_kg": 0.0
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["non_salvaged_kg"] == 25.0
+    assert data["kg_remaining"] == round(stock_before - 25.0, 2)
+
+    # Verify in batch ledger
+    ledger = client.get("/api/inventory/yarn/4/ledger").json()
+    assert any(e["event_type"] == "Damage Write-Off" and e["kg_change"] == -25.0 for e in ledger["events"])
+
+def test_yarn_loss_expense_and_net_loss_in_pl():
+    batches = client.get("/api/inventory/yarn").json()
+    target = [b for b in batches if b["id"] == 5][0]
+    cost_per_kg = target["cost_per_kg"]
+
+    gross_expected = round(15.0 * cost_per_kg, 2)
+    net_loss_expected = round(gross_expected - 300.0, 2)
+
+    resp = client.post("/api/inventory/yarn/5/damage", json={
+        "kg_damaged": 20.0,
+        "reason": "moisture",
+        "reported_by": "K. Murugesan",
+        "salvaged_kg": 5.0,
+        "waste_kg": 10.0,
+        "waste_sale_amount": 300.0,
+        "supplier_return_kg": 5.0,
+        "destroyed_kg": 0.0
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["net_loss"] == net_loss_expected
+    assert data["supplier_claim_id"] is not None
+
+    # Verify in Dashboard P&L
+    dash = client.get("/api/dashboard/summary").json()
+    assert "yarn_loss" in dash["pl_statement"]
+    assert dash["pl_statement"]["yarn_loss"] >= net_loss_expected
+
+def test_yarn_damage_flags_affected_orders_as_short():
+    batches = client.get("/api/inventory/yarn").json()
+    target = [b for b in batches if b["colour"] == "Crimson Red"][0]
+
+    resp = client.post(f"/api/inventory/yarn/{target['id']}/damage", json={
+        "kg_damaged": 50.0,
+        "reason": "insect damage",
+        "reported_by": "K. Murugesan",
+        "salvaged_kg": 0.0,
+        "waste_kg": 50.0,
+        "waste_sale_amount": 1000.0,
+        "supplier_return_kg": 0.0,
+        "destroyed_kg": 0.0
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["has_shortfall"] is True
+    assert len(data["affected_orders"]) > 0
+    assert data["total_shortfall_kg"] > 0
+    assert "PURCHASE REQUISITION" in data["draft_po_text"]
 
 
 

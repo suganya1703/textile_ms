@@ -21,6 +21,8 @@ class YarnBatch(Base):
     supplier = relationship("Supplier", back_populates="yarn_batches")
     consumptions = relationship("YarnConsumption", back_populates="yarn_batch")
     rolls = relationship("Roll", back_populates="yarn_batch")
+    damage_records = relationship("YarnDamageRecord", back_populates="yarn_batch")
+    supplier_claims = relationship("SupplierClaim", back_populates="yarn_batch")
 
 class Order(Base):
     __tablename__ = "orders"
@@ -81,3 +83,36 @@ class YarnConsumption(Base):
     yarn_batch = relationship("YarnBatch", back_populates="consumptions")
     production_job = relationship("ProductionJob", back_populates="consumptions")
     order = relationship("Order", back_populates="consumptions")
+
+class YarnDamageRecord(Base):
+    __tablename__ = "yarn_damage_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    yarn_batch_id = Column(Integer, ForeignKey("yarn_batches.id"), nullable=False)
+    kg_damaged = Column(Float, nullable=False)
+    reason = Column(String, nullable=False)  # insect damage, moisture, wrong count, transit damage, other
+    note = Column(String, nullable=True)
+    reported_by = Column(String, nullable=False)
+    salvaged_kg = Column(Float, default=0.0)
+    waste_kg = Column(Float, default=0.0)
+    waste_sale_amount = Column(Float, default=0.0)
+    supplier_return_kg = Column(Float, default=0.0)
+    destroyed_kg = Column(Float, default=0.0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    yarn_batch = relationship("YarnBatch", back_populates="damage_records")
+
+class SupplierClaim(Base):
+    __tablename__ = "supplier_claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
+    yarn_batch_id = Column(Integer, ForeignKey("yarn_batches.id"), nullable=False)
+    kg = Column(Float, nullable=False)
+    claim_amount = Column(Float, nullable=False)
+    reason = Column(String, nullable=False)
+    status = Column(String, default="Draft")  # Draft, Raised, Credited, Rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    supplier = relationship("Supplier", back_populates="claims")
+    yarn_batch = relationship("YarnBatch", back_populates="supplier_claims")

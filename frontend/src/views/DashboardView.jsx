@@ -316,6 +316,13 @@ export function DashboardView({ onNavigate }) {
               </span>
             </div>
 
+            <div className="flex justify-between items-center py-1">
+              <span className="text-[#6B7280]">Yarn loss</span>
+              <span className="font-mono font-semibold text-rose-600 tabular-nums">
+                {formatINR(pl_statement?.yarn_loss || 0)}
+              </span>
+            </div>
+
             <div className="flex justify-between items-center pt-3 border-t border-[#F3F4F6] text-sm">
               <span className="font-bold text-[#111827]">Net Profit</span>
               <span className="font-mono font-bold text-[#16A34A] tabular-nums">

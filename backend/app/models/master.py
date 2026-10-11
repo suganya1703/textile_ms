@@ -14,6 +14,7 @@ class Supplier(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     yarn_batches = relationship("YarnBatch", back_populates="supplier")
+    claims = relationship("SupplierClaim", back_populates="supplier")
 
 class Buyer(Base):
     __tablename__ = "buyers"
