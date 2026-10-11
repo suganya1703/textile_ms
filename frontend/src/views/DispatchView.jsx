@@ -179,7 +179,7 @@ export function DispatchView() {
           type="checkbox"
           checked={eligibleRolls.length > 0 && selectedRollIds.size === eligibleRolls.length}
           onChange={handleSelectAll}
-          className="rounded border-gray-300 text-[#714B67] focus:ring-[#714B67] cursor-pointer"
+          className="rounded-[4px] border-[#E5E9F2] text-[#2F3E8F] focus:ring-2 focus:ring-[#E3F5F1] cursor-pointer"
         />
       ),
       accessor: 'id',
@@ -188,7 +188,7 @@ export function DispatchView() {
           type="checkbox"
           checked={selectedRollIds.has(r.id)}
           onChange={() => toggleRoll(r.id)}
-          className="rounded border-gray-300 text-[#714B67] focus:ring-[#714B67] cursor-pointer"
+          className="rounded-[4px] border-[#E5E9F2] text-[#2F3E8F] focus:ring-2 focus:ring-[#E3F5F1] cursor-pointer"
         />
       )
     },
@@ -196,7 +196,7 @@ export function DispatchView() {
       header: '#',
       accessor: 'roll_number',
       render: (r) => (
-        <span className="font-mono font-bold text-[#714B67] text-xs sm:text-sm">
+        <span className="font-mono font-bold text-[#2F3E8F] text-xs sm:text-sm">
           {r.roll_number}
         </span>
       )
@@ -303,7 +303,7 @@ export function DispatchView() {
                       setSelectedBuyerId(e.target.value);
                       setRollsLoaded(false);
                     }}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] font-medium focus:outline-none focus:border-[#714B67]"
+                    className="w-full bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] font-medium focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                   >
                     {buyers.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -314,7 +314,7 @@ export function DispatchView() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] block mb-1">
+                  <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[#475569] block mb-1">
                     Transport Vehicle Number
                   </label>
                   <input
@@ -322,7 +322,7 @@ export function DispatchView() {
                     value={vehicleNo}
                     onChange={(e) => setVehicleNo(e.target.value)}
                     placeholder="e.g. TN-38-CY-4821"
-                    className="w-full font-mono uppercase bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                    className="w-full font-mono uppercase bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                   />
                 </div>
 
@@ -416,23 +416,23 @@ export function DispatchView() {
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#F3F4F6]">
-                      <span className="text-[#6B7280]">Estimated Subtotal</span>
-                      <span className="font-mono font-medium text-[#111827]">
+                    <div className="flex justify-between items-center py-1.5 border-b border-[#F1F5F9]">
+                      <span className="text-[#475569]">Estimated Subtotal</span>
+                      <span className="font-sans tabular-nums font-medium text-[#0F172A]">
                         {formatINR(estimatedSubtotal)}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#F3F4F6]">
-                      <span className="text-[#6B7280]">GST (5%)</span>
-                      <span className="font-mono font-medium text-[#111827]">
+                    <div className="flex justify-between items-center py-1.5 border-b border-[#F1F5F9]">
+                      <span className="text-[#475569]">GST (5%)</span>
+                      <span className="font-sans tabular-nums font-medium text-[#0F172A]">
                         {formatINR(gstAmount)}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center pt-2 text-base font-bold text-[#111827]">
+                    <div className="flex justify-between items-center pt-2 text-base font-bold text-[#0F172A]">
                       <span>Total Invoice</span>
-                      <span className="font-mono text-[#714B67]">
+                      <span className="font-sans tabular-nums text-[#0F172A]">
                         {formatINR(finalInvoiceTotal)}
                       </span>
                     </div>
@@ -463,15 +463,15 @@ export function DispatchView() {
           />
           <CardContent className="space-y-4 pt-1">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB]">
-                <div className="text-xs font-semibold text-[#6B7280] uppercase">Total Ready Rolls</div>
-                <div className="text-2xl font-bold font-mono text-[#714B67] mt-1">
+              <div className="p-4 bg-[#F8FAFC] rounded-[12px] border border-[#E5E9F2]">
+                <div className="text-xs font-semibold text-[#94A3B8] uppercase tracking-[0.05em]">Total Ready Rolls</div>
+                <div className="text-2xl font-bold font-sans tabular-nums text-[#2BA38C] mt-1">
                   {finishedStock?.total_ready_rolls || 14}
                 </div>
               </div>
-              <div className="p-4 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB]">
-                <div className="text-xs font-semibold text-[#6B7280] uppercase">Total Metres on Shelf</div>
-                <div className="text-2xl font-bold font-mono text-[#111827] mt-1">
+              <div className="p-4 bg-[#F8FAFC] rounded-[12px] border border-[#E5E9F2]">
+                <div className="text-xs font-semibold text-[#94A3B8] uppercase tracking-[0.05em]">Total Metres on Shelf</div>
+                <div className="text-2xl font-bold font-sans tabular-nums text-[#0F172A] mt-1">
                   {formatNumber(finishedStock?.total_ready_metres || 1420)} m
                 </div>
               </div>

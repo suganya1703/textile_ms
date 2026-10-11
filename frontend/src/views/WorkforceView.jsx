@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Zap } from 'lucide-react';
 import {
   Card,
   CardHeader,
   CardContent,
   Button,
+  Badge,
+  PageHeader,
   Modal,
   FormField,
   Input,
@@ -145,88 +148,94 @@ export function WorkforceView() {
     {
       header: 'WORKER',
       accessor: 'worker_name',
-      render: (w) => <span className="font-mono text-xs text-[#111827]">{w.worker_name}</span>
+      render: (w) => <span className="font-semibold text-xs text-[#0F172A]">{w.worker_name}</span>
     },
     {
       header: 'DATE',
       accessor: 'work_date',
-      render: (w) => <span className="font-mono text-xs text-[#4B5563]">{w.work_date}</span>
+      render: (w) => <span className="font-mono text-xs text-[#475569]">{w.work_date}</span>
     },
     {
       header: 'JOB WAGES',
       accessor: 'job_wages',
       align: 'right',
-      render: (w) => <span className="font-mono tabular-nums text-xs text-[#111827]">{formatINR(w.job_wages || 0)}</span>
+      render: (w) => <span className="font-sans tabular-nums text-xs text-[#0F172A]">{formatINR(w.job_wages || 0)}</span>
     },
     {
       header: 'IDLE WAGES',
       accessor: 'idle_wages',
       align: 'right',
-      render: (w) => <span className="font-mono tabular-nums text-xs text-amber-600">{formatINR(w.idle_wages || 0)}</span>
+      render: (w) => <span className="font-sans tabular-nums text-xs text-[#F59E0B] font-medium">{formatINR(w.idle_wages || 0)}</span>
     },
     {
       header: 'TOTAL WAGES',
       accessor: 'total_wages',
       align: 'right',
-      render: (w) => <span className="font-mono tabular-nums font-bold text-xs text-[#714B67]">{formatINR(w.total_wages || 0)}</span>
+      render: (w) => <span className="font-sans tabular-nums font-bold text-xs text-[#2F3E8F]">{formatINR(w.total_wages || 0)}</span>
     },
     {
       header: 'STATUS',
       accessor: 'is_reconciled',
+      align: 'center',
       render: () => (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+        <Badge variant="pass">
           Reconciled
-        </span>
+        </Badge>
       )
     }
   ];
 
   return (
-    <div className="space-y-5">
-      {/* Top Header: Title + Subtitle and [⚡ Generate Wages] on one line */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
-            Workforce
-          </h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">
-            Attendance, assignments and wages
-          </p>
+    <div className="space-y-6">
+      {/* Top Header */}
+      <PageHeader
+        title="Workforce"
+        subtitle="Attendance monitoring, machine operator assignments, and daily wage reconciliation."
+        actions={
+          <Button
+            variant="primary"
+            size="md"
+            icon={Zap}
+            onClick={() => setIsGenerateModalOpen(true)}
+          >
+            Generate Wages
+          </Button>
+        }
+      />
+
+      {/* Control Panel: Breadcrumb & Tabs */}
+      <div className="bg-white rounded-[16px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-xs text-[#94A3B8] font-medium">
+          <span>Workforce</span>
+          <span className="text-[#94A3B8]">/</span>
+          <span className="text-[#0F172A] font-semibold">{tab}</span>
         </div>
 
-        <button
-          onClick={() => setIsGenerateModalOpen(true)}
-          className="bg-[#714B67] hover:bg-[#5C3D54] text-white px-4 py-2 rounded-[8px] text-sm font-medium transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
-        >
-          <span>⚡</span>
-          <span>Generate Wages</span>
-        </button>
-      </div>
-
-      {/* Tabs: Attendance / Wages */}
-      <div className="flex items-center gap-3 text-xs pt-1">
-        {['Attendance', 'Wages'].map((item) => {
-          const isActive = tab === item;
-          return (
-            <button
-              key={item}
-              onClick={() => setTab(item)}
-              className={`transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-white text-[#111827] shadow-xs font-semibold px-3.5 py-1.5 rounded-[8px]'
-                  : 'text-[#6B7280] hover:text-[#111827] px-2 py-1.5 font-normal'
-              }`}
-            >
-              {item}
-            </button>
-          );
-        })}
+        <div className="flex items-center gap-1.5">
+          {['Attendance', 'Wages'].map((item) => {
+            const isActive = tab === item;
+            return (
+              <button
+                key={item}
+                onClick={() => setTab(item)}
+                className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#2F3E8F] text-white font-semibold shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#475569] hover:text-[#0F172A] hover:bg-[#E8EBF7]/50 border border-[#E5E9F2] font-medium'
+                }`}
+              >
+                {item}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Card with Title "Attendance" and Table */}
       <Card>
         <CardHeader
-          title={tab}
+          title={tab === 'Attendance' ? 'Daily Floor Attendance' : 'Reconciled Payroll Ledger'}
+          subtitle={tab === 'Attendance' ? 'Active shifts, machines operated, and operator check-ins' : 'Audit breakdown between piece rates and idle downtime wages'}
         />
         <CardContent className="pt-1">
           <Table

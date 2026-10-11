@@ -83,8 +83,8 @@ export function SettingsView() {
 
   if (loading && Object.keys(settings).length === 0) {
     return (
-      <div className="py-20 text-center text-[#6B7280]">
-        <div className="w-8 h-8 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+      <div className="py-20 text-center text-[#475569]">
+        <div className="w-8 h-8 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading Settings...
       </div>
     );
@@ -94,10 +94,10 @@ export function SettingsView() {
     <div className="space-y-6">
       {/* Page Title & Subtitle */}
       <div>
-        <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+        <h1 className="text-[26px] font-bold text-[#0F172A] tracking-tight leading-tight">
           Settings
         </h1>
-        <p className="text-[13px] text-[#6B7280] mt-0.5">
+        <p className="text-[13px] text-[#475569] mt-0.5">
           Mill parameters, thresholds and Odoo ERP export
         </p>
       </div>
@@ -123,16 +123,16 @@ export function SettingsView() {
           <CardContent className="space-y-4 pt-1">
             <div>
               <div className="flex items-baseline justify-between mb-1">
-                <code className="font-mono text-xs font-semibold text-[#111827]">company_name</code>
-                <span className="text-xs text-[#6B7280]">Primary tenant identifier</span>
+                <code className="font-mono text-xs font-semibold text-[#0F172A]">company_name</code>
+                <span className="text-xs text-[#94A3B8]">Primary tenant identifier</span>
               </div>
               <input
                 type="text"
                 value={settings.company_name?.value || 'Everest Textile Mills'}
                 onChange={(e) => handleInputChange('company_name', e.target.value)}
-                className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                className="w-full bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
               />
-              <p className="text-xs text-[#6B7280] mt-1">Company name displayed across reports, invoices and top navigation.</p>
+              <p className="text-xs text-[#94A3B8] mt-1">Company name displayed across reports, invoices and top navigation.</p>
             </div>
           </CardContent>
         </Card>
@@ -157,32 +157,32 @@ export function SettingsView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-baseline justify-between mb-1">
-                  <code className="font-mono text-xs font-semibold text-[#111827]">four_point_grade_a_max</code>
-                  <span className="text-xs text-[#6B7280]">Grade A limit</span>
+                  <code className="font-mono text-xs font-semibold text-[#0F172A]">four_point_grade_a_max</code>
+                  <span className="text-xs text-[#94A3B8]">Grade A limit</span>
                 </div>
                 <input
                   type="number"
                   step="1"
                   value={settings.four_point_grade_a_max?.value || '20.0'}
                   onChange={(e) => handleInputChange('four_point_grade_a_max', e.target.value)}
-                  className="w-full font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                  className="w-full font-mono bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                 />
-                <p className="text-xs text-[#6B7280] mt-1">Maximum points per 100 sq yd to award Grade A premium.</p>
+                <p className="text-xs text-[#94A3B8] mt-1">Maximum points per 100 sq yd to award Grade A premium.</p>
               </div>
 
               <div>
                 <div className="flex items-baseline justify-between mb-1">
-                  <code className="font-mono text-xs font-semibold text-[#111827]">four_point_grade_b_max</code>
-                  <span className="text-xs text-[#6B7280]">Reject cutoff</span>
+                  <code className="font-mono text-xs font-semibold text-[#0F172A]">four_point_grade_b_max</code>
+                  <span className="text-xs text-[#94A3B8]">Reject cutoff</span>
                 </div>
                 <input
                   type="number"
                   step="1"
                   value={settings.four_point_grade_b_max?.value || '40.0'}
                   onChange={(e) => handleInputChange('four_point_grade_b_max', e.target.value)}
-                  className="w-full font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                  className="w-full font-mono bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                 />
-                <p className="text-xs text-[#6B7280] mt-1">Maximum points for Grade B; rolls exceeding this cutoff are marked Reject.</p>
+                <p className="text-xs text-[#94A3B8] mt-1">Maximum points for Grade B; rolls exceeding this cutoff are marked Reject.</p>
               </div>
             </div>
           </CardContent>
@@ -208,32 +208,32 @@ export function SettingsView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-baseline justify-between mb-1">
-                  <code className="font-mono text-xs font-semibold text-[#111827]">expected_yield_ratio</code>
-                  <span className="text-xs text-[#6B7280]">Yield benchmark</span>
+                  <code className="font-mono text-xs font-semibold text-[#0F172A]">expected_yield_ratio</code>
+                  <span className="text-xs text-[#94A3B8]">Yield benchmark</span>
                 </div>
                 <input
                   type="number"
                   step="0.01"
                   value={settings.expected_yield_ratio?.value || '0.95'}
                   onChange={(e) => handleInputChange('expected_yield_ratio', e.target.value)}
-                  className="w-full font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                  className="w-full font-mono bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                 />
-                <p className="text-xs text-[#6B7280] mt-1">Standard conversion ratio from yarn to fabric (0.95 denotes 5% expected process scrap).</p>
+                <p className="text-xs text-[#94A3B8] mt-1">Standard conversion ratio from yarn to fabric (0.95 denotes 5% expected process scrap).</p>
               </div>
 
               <div>
                 <div className="flex items-baseline justify-between mb-1">
-                  <code className="font-mono text-xs font-semibold text-[#111827]">low_stock_threshold_kg</code>
-                  <span className="text-xs text-[#6B7280]">Alert threshold</span>
+                  <code className="font-mono text-xs font-semibold text-[#0F172A]">low_stock_threshold_kg</code>
+                  <span className="text-xs text-[#94A3B8]">Alert threshold</span>
                 </div>
                 <input
                   type="number"
                   step="10"
                   value={settings.low_stock_threshold_kg?.value || '500.0'}
                   onChange={(e) => handleInputChange('low_stock_threshold_kg', e.target.value)}
-                  className="w-full font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                  className="w-full font-mono bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                 />
-                <p className="text-xs text-[#6B7280] mt-1">Weight threshold in kg that triggers low stock warning badges on inventory cards.</p>
+                <p className="text-xs text-[#94A3B8] mt-1">Weight threshold in kg that triggers low stock warning badges on inventory cards.</p>
               </div>
             </div>
           </CardContent>
@@ -259,32 +259,32 @@ export function SettingsView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-baseline justify-between mb-1">
-                  <code className="font-mono text-xs font-semibold text-[#111827]">overhead_rate_per_hour</code>
-                  <span className="text-xs text-[#6B7280]">Hourly rate (₹)</span>
+                  <code className="font-mono text-xs font-semibold text-[#0F172A]">overhead_rate_per_hour</code>
+                  <span className="text-xs text-[#94A3B8]">Hourly rate (₹)</span>
                 </div>
                 <input
                   type="number"
                   step="5"
                   value={settings.overhead_rate_per_hour?.value || '250.0'}
                   onChange={(e) => handleInputChange('overhead_rate_per_hour', e.target.value)}
-                  className="w-full font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                  className="w-full font-mono bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                 />
-                <p className="text-xs text-[#6B7280] mt-1">Factory electricity, depreciation and overhead cost allocation per machine hour.</p>
+                <p className="text-xs text-[#94A3B8] mt-1">Factory electricity, depreciation and overhead cost allocation per machine hour.</p>
               </div>
 
               <div>
                 <div className="flex items-baseline justify-between mb-1">
-                  <code className="font-mono text-xs font-semibold text-[#111827]">tax_rate_pct</code>
-                  <span className="text-xs text-[#6B7280]">GST %</span>
+                  <code className="font-mono text-xs font-semibold text-[#0F172A]">tax_rate_pct</code>
+                  <span className="text-xs text-[#94A3B8]">GST %</span>
                 </div>
                 <input
                   type="number"
                   step="0.5"
                   value={settings.tax_rate_pct?.value || '5.0'}
                   onChange={(e) => handleInputChange('tax_rate_pct', e.target.value)}
-                  className="w-full font-mono bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                  className="w-full font-mono bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
                 />
-                <p className="text-xs text-[#6B7280] mt-1">Applicable GST percentage applied during dispatch invoice generation.</p>
+                <p className="text-xs text-[#94A3B8] mt-1">Applicable GST percentage applied during dispatch invoice generation.</p>
               </div>
             </div>
           </CardContent>
@@ -358,13 +358,13 @@ export function SettingsView() {
           <CardContent className="pt-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Products Card */}
-              <div className="p-4 bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] space-y-3 flex flex-col justify-between">
+              <div className="p-4 bg-white rounded-[12px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-3 flex flex-col justify-between">
                 <div>
-                  <div className="w-9 h-9 rounded-[8px] bg-purple-50 text-[#714B67] flex items-center justify-center mb-2">
+                  <div className="w-9 h-9 rounded-[10px] bg-[#E8EBF7] text-[#2F3E8F] flex items-center justify-center mb-2">
                     <FileText className="w-5 h-5" />
                   </div>
-                  <h4 className="font-bold text-sm text-[#111827]">Products</h4>
-                  <p className="text-xs text-[#6B7280] mt-1">Fabric specifications, constructions, and standard selling prices</p>
+                  <h4 className="font-bold text-sm text-[#0F172A]">Products</h4>
+                  <p className="text-xs text-[#475569] mt-1">Fabric specifications, constructions, and standard selling prices</p>
                 </div>
                 <Button
                   variant="secondary"
@@ -377,13 +377,13 @@ export function SettingsView() {
               </div>
 
               {/* Lots Card */}
-              <div className="p-4 bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] space-y-3 flex flex-col justify-between">
+              <div className="p-4 bg-white rounded-[12px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-3 flex flex-col justify-between">
                 <div>
-                  <div className="w-9 h-9 rounded-[8px] bg-purple-50 text-[#714B67] flex items-center justify-center mb-2">
+                  <div className="w-9 h-9 rounded-[10px] bg-[#E8EBF7] text-[#2F3E8F] flex items-center justify-center mb-2">
                     <FileText className="w-5 h-5" />
                   </div>
-                  <h4 className="font-bold text-sm text-[#111827]">Lots</h4>
-                  <p className="text-xs text-[#6B7280] mt-1">Yarn dye lots, roll numbers, ASTM grades, and test scores</p>
+                  <h4 className="font-bold text-sm text-[#0F172A]">Lots</h4>
+                  <p className="text-xs text-[#475569] mt-1">Yarn dye lots, roll numbers, ASTM grades, and test scores</p>
                 </div>
                 <Button
                   variant="secondary"
@@ -396,13 +396,13 @@ export function SettingsView() {
               </div>
 
               {/* Stock Card */}
-              <div className="p-4 bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] space-y-3 flex flex-col justify-between">
+              <div className="p-4 bg-white rounded-[12px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-3 flex flex-col justify-between">
                 <div>
-                  <div className="w-9 h-9 rounded-[8px] bg-purple-50 text-[#714B67] flex items-center justify-center mb-2">
+                  <div className="w-9 h-9 rounded-[10px] bg-[#E8EBF7] text-[#2F3E8F] flex items-center justify-center mb-2">
                     <FileText className="w-5 h-5" />
                   </div>
-                  <h4 className="font-bold text-sm text-[#111827]">Stock</h4>
-                  <p className="text-xs text-[#6B7280] mt-1">Yarn warehouse inventory balances and shelf rolls ready for dispatch</p>
+                  <h4 className="font-bold text-sm text-[#0F172A]">Stock</h4>
+                  <p className="text-xs text-[#475569] mt-1">Yarn warehouse inventory balances and shelf rolls ready for dispatch</p>
                 </div>
                 <Button
                   variant="secondary"
@@ -415,13 +415,13 @@ export function SettingsView() {
               </div>
 
               {/* Invoices Card */}
-              <div className="p-4 bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] space-y-3 flex flex-col justify-between">
+              <div className="p-4 bg-white rounded-[12px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-3 flex flex-col justify-between">
                 <div>
-                  <div className="w-9 h-9 rounded-[8px] bg-purple-50 text-[#714B67] flex items-center justify-center mb-2">
+                  <div className="w-9 h-9 rounded-[10px] bg-[#E8EBF7] text-[#2F3E8F] flex items-center justify-center mb-2">
                     <FileText className="w-5 h-5" />
                   </div>
-                  <h4 className="font-bold text-sm text-[#111827]">Invoices</h4>
-                  <p className="text-xs text-[#6B7280] mt-1">Tax invoices, vehicle transport records, and customer accounts receivable</p>
+                  <h4 className="font-bold text-sm text-[#0F172A]">Invoices</h4>
+                  <p className="text-xs text-[#475569] mt-1">Tax invoices, vehicle transport records, and customer accounts receivable</p>
                 </div>
                 <Button
                   variant="secondary"

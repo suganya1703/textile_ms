@@ -100,39 +100,39 @@ export function Buyer360Modal({ isOpen, onClose, buyerId }) {
                 <span>Credit & Billing</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Credit Limit:</span>
-                <span className="font-mono font-semibold text-gray-900">{formatINR(fin?.credit_limit || 0)}</span>
+                <span className="text-[#94A3B8]">Credit Limit:</span>
+                <span className="font-sans tabular-nums font-semibold text-[#0F172A]">{formatINR(fin?.credit_limit || 0)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Invoiced Total:</span>
-                <span className="font-mono text-gray-700">{formatINR(fin?.total_invoiced || 0)}</span>
+                <span className="text-[#94A3B8]">Invoiced Total:</span>
+                <span className="font-sans tabular-nums text-[#475569]">{formatINR(fin?.total_invoiced || 0)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Paid Total:</span>
-                <span className="font-mono text-emerald-700 font-semibold">{formatINR(fin?.total_paid || 0)}</span>
+                <span className="text-[#94A3B8]">Paid Total:</span>
+                <span className="font-sans tabular-nums text-[#2BA38C] font-semibold">{formatINR(fin?.total_paid || 0)}</span>
               </div>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-gray-500 font-medium">Outstanding Balance:</span>
-                <span className={`font-mono font-bold ${fin?.outstanding_balance > (fin?.credit_limit || 0) * 0.8 ? 'text-rose-600' : 'text-gray-900'}`}>
+                <span className="text-[#94A3B8] font-medium">Outstanding Balance:</span>
+                <span className={`font-sans tabular-nums font-bold ${fin?.outstanding_balance > (fin?.credit_limit || 0) * 0.8 ? 'text-[#DC2626]' : 'text-[#0F172A]'}`}>
                   {formatINR(fin?.outstanding_balance || 0)}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#F1F5F9] rounded-full h-2 overflow-hidden">
                 <div
                   className={`h-full transition-all ${
                     (fin?.credit_utilization_pct || 0) > 85
-                      ? 'bg-rose-500'
+                      ? 'bg-[#DC2626]'
                       : (fin?.credit_utilization_pct || 0) > 60
-                      ? 'bg-amber-500'
+                      ? 'bg-[#F59E0B]'
                       : 'bg-[#2F3E8F]'
                   }`}
                   style={{ width: `${Math.min(100, fin?.credit_utilization_pct || 0)}%` }}
                 />
               </div>
-              <div className="flex justify-between text-[11px] text-gray-500">
+              <div className="flex justify-between text-[11px] text-[#94A3B8]">
                 <span>{fin?.credit_utilization_pct || 0}% credit used</span>
                 <span>Avail: {formatINR(fin?.available_credit || 0)}</span>
               </div>
@@ -227,11 +227,11 @@ export function Buyer360Modal({ isOpen, onClose, buyerId }) {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-gray-100 text-[11px]">
                         <div>
                           <span className="text-gray-400 block">Progress:</span>
-                          <span className="font-mono font-semibold text-gray-800">{o.progress_pct}% ({formatNumber(o.produced_m)} m)</span>
+                          <span className="font-sans tabular-nums font-semibold text-gray-800">{o.progress_pct}% ({formatNumber(o.produced_m)} m)</span>
                         </div>
                         <div>
                           <span className="text-gray-400 block">Selling Price:</span>
-                          <span className="font-mono font-semibold text-gray-800">{formatINR(o.price_per_m)}/m</span>
+                          <span className="font-sans tabular-nums font-semibold text-gray-800">{formatINR(o.price_per_m)}/m</span>
                         </div>
                         <div>
                           <span className="text-gray-400 block">Deadline:</span>
@@ -312,7 +312,7 @@ export function Buyer360Modal({ isOpen, onClose, buyerId }) {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <span className="font-mono font-bold text-gray-900">{formatINR(inv.total)}</span>
+                            <span className="font-sans tabular-nums font-bold text-gray-900">{formatINR(inv.total)}</span>
                           </div>
                           <Badge variant={inv.status === 'paid' ? 'Completed' : 'Warning'} size="sm">
                             {inv.status.toUpperCase()}
@@ -339,7 +339,7 @@ export function Buyer360Modal({ isOpen, onClose, buyerId }) {
                           <div className="font-semibold text-emerald-800">Payment via {p.method}</div>
                           <div className="text-gray-500 text-[11px]">Date: {p.paid_at.slice(0, 10)}</div>
                         </div>
-                        <div className="font-mono font-bold text-emerald-700">
+                        <div className="font-sans tabular-nums font-bold text-emerald-700">
                           +{formatINR(p.amount)}
                         </div>
                       </div>

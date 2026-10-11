@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Plus,
   RefreshCw,
   Eye,
   Check,
-  Copy
+  Copy,
+  Search,
+  ExternalLink,
+  ChevronRight
 } from 'lucide-react';
 import {
   Card,
@@ -25,11 +28,23 @@ import {
 import { api } from '../api/client';
 import { Buyer360Modal } from '../components/Buyer360Modal';
 
+const PIPELINE_STAGES = [
+  'Created',
+  'Yarn Reserved',
+  'Spinning',
+  'Weaving',
+  'Dyeing',
+  'QC',
+  'Ready',
+  'Dispatched'
+];
+
 export function OrdersView({ onOpenTracking }) {
   const [orders, setOrders] = useState([]);
   const [buyers, setBuyers] = useState([]);
   const [delayRiskData, setDelayRiskData] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [buyer360Id, setBuyer360Id] = useState(null);
   const [isBuyer360Open, setIsBuyer360Open] = useState(false);
@@ -165,28 +180,55 @@ export function OrdersView({ onOpenTracking }) {
     'Dispatched'
   ];
 
-  const filteredOrders = orders.filter((o) => {
-    if (statusFilter === 'All') return true;
-    const s = (o.status || '').toLowerCase().replace(/[-_]/g, ' ');
-    const f = statusFilter.toLowerCase();
-    if (f === 'qc') return s.includes('qc');
-    if (f === 'yarn reserved') return s.includes('yarn reserved');
-    return s.includes(f);
-  });
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      // Search query filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const numMatch = String(o.order_number || '').toLowerCase().includes(query);
+        const buyerMatch = String(o.buyer_name || '').toLowerCase().includes(query);
+        const fabricMatch = String(o.fabric_type || '').toLowerCase().includes(query);
+        const colMatch = String(o.colour || '').toLowerCase().includes(query);
+        if (!numMatch && !buyerMatch && !fabricMatch && !colMatch) return false;
+      }
 
-  // Table columns: #, Fabric, Colour, Qty, Status pill + delay badge, Deadline, View link and an icon
+      // Status chip filter
+      if (statusFilter === 'All') return true;
+      const s = (o.status || '').toLowerCase().replace(/[-_]/g, ' ');
+      const f = statusFilter.toLowerCase();
+      if (f === 'qc') return s.includes('qc');
+      if (f === 'yarn reserved') return s.includes('yarn reserved');
+      return s.includes(f);
+    });
+  }, [orders, statusFilter, searchQuery]);
+
+  // Stage index helper for status bar
+  const getStageIndex = (status) => {
+    const s = String(status || '').toLowerCase().replace(/[-_]/g, ' ');
+    if (s.includes('created')) return 0;
+    if (s.includes('yarn')) return 1;
+    if (s.includes('spinning')) return 2;
+    if (s.includes('weaving')) return 3;
+    if (s.includes('dyeing')) return 4;
+    if (s.includes('qc')) return 5;
+    if (s.includes('ready')) return 6;
+    if (s.includes('dispatched')) return 7;
+    return 0;
+  };
+
+  // Table columns
   const columns = [
     {
-      header: '#',
+      header: 'ORDER #',
       accessor: 'order_number',
       render: (o) => (
-        <span className="font-mono font-bold text-[#714B67] text-xs sm:text-sm">
+        <span className="font-mono font-bold text-[#2F3E8F] text-xs sm:text-sm">
           #{o.order_number}
         </span>
       )
     },
     {
-      header: 'Buyer',
+      header: 'BUYER',
       accessor: 'buyer_name',
       render: (o) => (
         <button
@@ -195,57 +237,57 @@ export function OrdersView({ onOpenTracking }) {
             setBuyer360Id(o.buyer_id);
             setIsBuyer360Open(true);
           }}
-          className="text-xs font-semibold text-[#2F3E8F] hover:underline text-left cursor-pointer flex items-center gap-1"
+          className="text-xs font-semibold text-[#0F172A] hover:text-[#2F3E8F] text-left cursor-pointer flex items-center gap-1.5 transition-colors"
         >
           <span>{o.buyer_name || 'Buyer'}</span>
-          <span className="text-[10px] bg-indigo-50 text-[#2F3E8F] px-1 rounded font-bold">360°</span>
+          <span className="text-[10px] bg-[#E8EBF7] text-[#2F3E8F] px-1.5 py-0.2 rounded font-bold">360°</span>
         </button>
       )
     },
     {
-      header: 'Fabric',
+      header: 'FABRIC',
       accessor: 'fabric_type',
       render: (o) => (
-        <span className="font-medium text-[#111827] text-xs sm:text-sm">
+        <span className="font-medium text-[#0F172A] text-xs sm:text-sm">
           {o.fabric_type}
         </span>
       )
     },
     {
-      header: 'Colour',
+      header: 'COLOUR',
       accessor: 'colour',
       render: (o) => (
-        <span className="text-[#4B5563] text-xs">
+        <span className="text-[#475569] text-xs">
           {o.colour}
         </span>
       )
     },
     {
-      header: 'Qty',
+      header: 'QUANTITY',
       accessor: 'quantity_m',
       align: 'right',
       render: (o) => (
-        <span className="font-mono tabular-nums text-[#111827]">
+        <span className="font-sans tabular-nums font-medium text-[#0F172A] text-xs">
           {formatNumber(o.quantity_m)} m
         </span>
       )
     },
     {
-      header: 'Status',
+      header: 'STATUS & RISK',
       accessor: 'status',
       render: (o) => {
         const risk = getDelayRiskLevel(o);
         const riskBadge =
           risk === 'high' ? (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA]">
               High Risk
             </span>
           ) : risk === 'medium' ? (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]">
               Moderate
             </span>
           ) : (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]">
               On Track
             </span>
           );
@@ -261,22 +303,22 @@ export function OrdersView({ onOpenTracking }) {
       }
     },
     {
-      header: 'Deadline',
+      header: 'DEADLINE',
       accessor: 'deadline',
       render: (o) => (
-        <span className="font-mono text-xs text-[#4B5563]">
+        <span className="font-mono text-xs text-[#475569]">
           {o.deadline}
         </span>
       )
     },
     {
-      header: 'Actions',
+      header: 'ACTIONS',
       accessor: 'id',
       align: 'right',
       render: (o) => (
         <button
           onClick={() => handleOpenViewModal(o)}
-          className="inline-flex items-center gap-1 text-xs text-[#714B67] hover:underline font-medium"
+          className="inline-flex items-center gap-1 text-xs text-[#2F3E8F] hover:text-[#26337A] font-semibold cursor-pointer"
         >
           <Eye className="w-3.5 h-3.5" />
           <span>View</span>
@@ -287,6 +329,7 @@ export function OrdersView({ onOpenTracking }) {
 
   return (
     <div className="space-y-6">
+      {/* Page Title Row */}
       <PageHeader
         title="Orders"
         subtitle="End-to-end order execution tracking, dispatch deadlines, and predictive delay risk scoring."
@@ -295,36 +338,65 @@ export function OrdersView({ onOpenTracking }) {
             <Button variant="secondary" size="sm" icon={RefreshCw} onClick={loadData}>
               Refresh
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={Plus}
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              + New Order
-            </Button>
           </div>
         }
       />
 
-      {/* Filter Chips: All active in purple fill, others plain text */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {FILTER_OPTIONS.map((item) => {
-          const isActive = statusFilter === item;
-          return (
-            <button
-              key={item}
-              onClick={() => setStatusFilter(item)}
-              className={`px-3.5 py-1.5 rounded-full text-xs transition-colors shrink-0 ${
-                isActive
-                  ? 'bg-[#714B67] text-white font-medium shadow-xs'
-                  : 'text-[#6B7280] hover:text-[#111827] font-normal hover:bg-gray-100'
-              }`}
+      {/* Control Panel Row: Breadcrumb, Search Box, Filter Chips, Primary Action Button */}
+      <div className="bg-white rounded-[16px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] p-4 sm:p-5 space-y-3 sm:space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1.5 text-xs text-[#94A3B8] font-medium">
+            <span>Orders</span>
+            <ChevronRight className="w-3.5 h-3.5 text-[#94A3B8]" />
+            <span className="text-[#0F172A] font-semibold">Active Orders & Pipeline</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Search Box */}
+            <div className="relative min-w-[220px] sm:min-w-[280px]">
+              <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-3" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search orders, buyer, fabric..."
+                className="w-full h-10 pl-9 pr-3 text-xs bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1] transition-all"
+              />
+            </div>
+
+            {/* Primary Action Button */}
+            <Button
+              variant="primary"
+              size="md"
+              icon={Plus}
+              onClick={() => setIsCreateModalOpen(true)}
+              className="shrink-0"
             >
-              {item}
-            </button>
-          );
-        })}
+              + New Order
+            </Button>
+          </div>
+        </div>
+
+        {/* Filter Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-[#F1F5F9]">
+          {FILTER_OPTIONS.map((item) => {
+            const isActive = statusFilter === item;
+            return (
+              <button
+                key={item}
+                onClick={() => setStatusFilter(item)}
+                className={`px-3 py-1.5 rounded-full text-xs transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? 'bg-[#2F3E8F] text-white font-semibold shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#475569] hover:text-[#0F172A] hover:bg-[#E8EBF7]/50 border border-[#E5E9F2] font-medium'
+                }`}
+              >
+                {item}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Orders Table */}
@@ -334,7 +406,7 @@ export function OrdersView({ onOpenTracking }) {
             columns={columns}
             data={filteredOrders}
             keyField="id"
-            emptyMessage={`No orders found with status '${statusFilter}'.`}
+            emptyMessage={`No orders found matching filter criteria.`}
           />
         </CardContent>
       </Card>
@@ -432,7 +504,7 @@ export function OrdersView({ onOpenTracking }) {
             />
           </FormField>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#F3F4F6]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#E5E9F2]">
             <Button variant="secondary" type="button" onClick={() => setIsCreateModalOpen(false)}>
               Cancel
             </Button>
@@ -443,7 +515,7 @@ export function OrdersView({ onOpenTracking }) {
         </form>
       </Modal>
 
-      {/* View Order Modal */}
+      {/* View Order Modal with Horizontal Chevron Status Bar */}
       <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
@@ -451,53 +523,87 @@ export function OrdersView({ onOpenTracking }) {
         subtitle={`Buyer: ${selectedOrder?.buyer_name || 'Buyer'}`}
       >
         {selectedOrder && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB] text-xs">
+          <div className="space-y-5">
+            {/* Horizontal Chevron Status Bar */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[#94A3B8] block">
+                Production Pipeline Stage
+              </span>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 p-1 bg-[#F8FAFC] rounded-[12px] border border-[#E5E9F2]">
+                {(() => {
+                  const currentIdx = getStageIndex(selectedOrder.status);
+                  return PIPELINE_STAGES.map((stageName, idx) => {
+                    const isCompleted = idx < currentIdx;
+                    const isCurrent = idx === currentIdx;
+                    let style = 'bg-transparent text-[#94A3B8] font-medium';
+                    if (isCompleted) {
+                      style = 'bg-[#E3F5F1] text-[#1F7564] font-semibold border border-[#A2DFD4]';
+                    } else if (isCurrent) {
+                      style = 'bg-[#2F3E8F] text-white font-bold shadow-xs';
+                    }
+                    return (
+                      <div
+                        key={stageName}
+                        className={`text-center py-1.5 px-1 rounded-[8px] text-[11px] truncate transition-all ${style}`}
+                        title={stageName}
+                      >
+                        {stageName}
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+
+            {/* Order Specification Details */}
+            <div className="grid grid-cols-2 gap-3 p-4 bg-[#F8FAFC] rounded-[12px] border border-[#E5E9F2] text-xs">
               <div>
-                <span className="text-[#6B7280] block">Fabric Construction:</span>
-                <span className="font-semibold text-[#111827]">{selectedOrder.fabric_type}</span>
+                <span className="text-[#94A3B8] block font-medium">Fabric Construction:</span>
+                <span className="font-semibold text-[#0F172A] mt-0.5 block">{selectedOrder.fabric_type}</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block">Colour / Shade:</span>
-                <span className="font-semibold text-[#111827]">{selectedOrder.colour}</span>
+                <span className="text-[#94A3B8] block font-medium">Colour / Shade:</span>
+                <span className="font-semibold text-[#0F172A] mt-0.5 block">{selectedOrder.colour}</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block">Quantity:</span>
-                <span className="font-mono text-[#111827] font-semibold">{formatNumber(selectedOrder.quantity_m)} metres</span>
+                <span className="text-[#94A3B8] block font-medium">Quantity:</span>
+                <span className="font-sans tabular-nums text-[#0F172A] font-semibold mt-0.5 block">{formatNumber(selectedOrder.quantity_m)} metres</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block">Selling Price:</span>
-                <span className="font-mono text-[#111827] font-semibold">{formatINR(selectedOrder.price_per_m)}/m ({formatINR(selectedOrder.quantity_m * selectedOrder.price_per_m)})</span>
+                <span className="text-[#94A3B8] block font-medium">Selling Price:</span>
+                <span className="font-sans tabular-nums text-[#0F172A] font-semibold mt-0.5 block">{formatINR(selectedOrder.price_per_m)}/m ({formatINR(selectedOrder.quantity_m * selectedOrder.price_per_m, 0)})</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block">Delivery Deadline:</span>
-                <span className="font-mono text-[#111827]">{selectedOrder.deadline}</span>
+                <span className="text-[#94A3B8] block font-medium">Delivery Deadline:</span>
+                <span className="font-mono text-[#0F172A] mt-0.5 block">{selectedOrder.deadline}</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block">Current Status:</span>
-                <Badge variant={selectedOrder.status}>{formatStatus(selectedOrder.status)}</Badge>
+                <span className="text-[#94A3B8] block font-medium">Current Status:</span>
+                <div className="mt-0.5">
+                  <Badge variant={selectedOrder.status}>{formatStatus(selectedOrder.status)}</Badge>
+                </div>
               </div>
             </div>
 
             {/* Activity Timeline */}
             {selectedOrder.activity_timeline && selectedOrder.activity_timeline.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-[#E5E7EB]">
-                <h5 className="text-xs font-bold text-[#111827] uppercase tracking-wider">
+              <div className="space-y-2 pt-2 border-t border-[#E5E9F2]">
+                <h5 className="text-xs font-bold text-[#0F172A] uppercase tracking-[0.05em]">
                   Order Activity Timeline
                 </h5>
                 <div className="space-y-1.5 max-h-40 overflow-y-auto">
                   {selectedOrder.activity_timeline.map((act) => (
                     <div
                       key={act.id}
-                      className="p-2.5 bg-gray-50 rounded-[6px] border border-gray-200 text-xs flex items-start justify-between gap-2"
+                      className="p-2.5 bg-[#F8FAFC] rounded-[10px] border border-[#E5E9F2] text-xs flex items-start justify-between gap-2"
                     >
                       <div>
-                        <div className="font-medium text-[#111827]">{act.message}</div>
-                        <div className="text-[11px] text-[#6B7280]">
+                        <div className="font-medium text-[#0F172A]">{act.message}</div>
+                        <div className="text-[11px] text-[#94A3B8]">
                           By {act.user} • {new Date(act.timestamp).toLocaleString()}
                         </div>
                       </div>
-                      <Badge variant="secondary" size="sm">
+                      <Badge variant="primary" size="sm">
                         {act.action}
                       </Badge>
                     </div>
@@ -506,7 +612,8 @@ export function OrdersView({ onOpenTracking }) {
               </div>
             )}
 
-            <div className="flex flex-wrap justify-between items-center gap-2 pt-2">
+            {/* Modal Actions */}
+            <div className="flex flex-wrap justify-between items-center gap-2 pt-3 border-t border-[#E5E9F2]">
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
@@ -524,12 +631,13 @@ export function OrdersView({ onOpenTracking }) {
                     setIsBuyer360Open(true);
                   }}
                 >
-                  Buyer 360
+                  Buyer 360°
                 </Button>
               </div>
               <Button
                 variant="primary"
                 size="sm"
+                iconRight={ExternalLink}
                 onClick={() => {
                   setIsViewModalOpen(false);
                   if (onOpenTracking) onOpenTracking(selectedOrder.order_number);

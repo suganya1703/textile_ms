@@ -252,21 +252,21 @@ export function ProductionView() {
     const shift = job?.shift || 'day';
 
     const borderClass = isRunning
-      ? 'border-l-4 border-l-emerald-500'
+      ? 'border-l-4 border-l-[#2BA38C]'
       : isBreakdown
-      ? 'border-l-4 border-l-rose-500'
-      : 'border-l-4 border-l-amber-500';
+      ? 'border-l-4 border-l-[#DC2626]'
+      : 'border-l-4 border-l-[#F59E0B]';
 
     return (
       <div
         key={m.id}
-        className={`bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-5 space-y-3 ${borderClass}`}
+        className={`bg-white rounded-[16px] border border-[#E5E9F2] shadow-[0_2px_8px_rgba(15,23,42,0.04)] p-5 space-y-3.5 ${borderClass}`}
       >
         {/* Machine name bold, status pill top right, stage in grey */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h4 className="font-bold text-[#111827] text-sm">{m.name}</h4>
-            <div className="text-xs text-[#6B7280] capitalize mt-0.5">{m.stage}</div>
+            <h4 className="font-bold text-[#0F172A] text-sm tracking-tight">{m.name}</h4>
+            <div className="text-xs text-[#94A3B8] capitalize mt-0.5">{m.stage}</div>
           </div>
           <Badge variant={m.effectiveStatus} size="sm">
             {formatStatus(m.effectiveStatus)}
@@ -275,15 +275,15 @@ export function ProductionView() {
 
         {/* Breakdown Interrupted Job Banner */}
         {isInterrupted && (
-          <div className="p-2.5 rounded-[8px] bg-rose-50 border border-rose-200 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-700">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+          <div className="p-2.5 rounded-[10px] bg-[#FEE2E2] border border-[#FECACA] flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#DC2626]">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-[#DC2626]" />
               <span>Job interrupted, reassign</span>
             </div>
             <button
               type="button"
               onClick={() => handleOpenReassignModal(m, job)}
-              className="text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-[6px] transition-colors shadow-xs"
+              className="text-xs font-semibold bg-[#DC2626] hover:bg-[#B91C1C] text-white px-2.5 py-1 rounded-[8px] transition-colors shadow-xs cursor-pointer"
             >
               Reassign
             </button>
@@ -293,26 +293,28 @@ export function ProductionView() {
         {/* 'Order #n • stage' or 'No active job' in grey italic */}
         <div className="text-xs">
           {job ? (
-            <div className="font-medium text-[#111827]">
-              Order #{job.order_number} • <span className="text-[#6B7280] capitalize">{m.stage}</span>
-              {isInterrupted && <span className="ml-1 text-rose-600 text-[11px] font-normal">(Interrupted)</span>}
+            <div className="font-medium text-[#0F172A]">
+              <span className="font-mono font-bold text-[#2F3E8F]">Order #{job.order_number}</span> • <span className="text-[#475569] capitalize">{m.stage}</span>
+              {isInterrupted && <span className="ml-1 text-[#DC2626] text-[11px] font-semibold">(Interrupted)</span>}
             </div>
           ) : (
-            <div className="text-[#9CA3AF] italic">No active job</div>
+            <div className="text-[#94A3B8] italic">No active job</div>
           )}
         </div>
 
-        {/* Progress bar in purple, '% done' left and 'm today' right */}
+        {/* Progress bar in primary #2F3E8F, accent #2BA38C at 100%, '% done' left and 'm today' right */}
         <div>
-          <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-1.5">
+          <div className="w-full bg-[#F1F5F9] rounded-full h-2 overflow-hidden mb-1.5">
             <div
-              className={`h-full transition-all duration-300 ${isBreakdown ? 'bg-rose-500' : 'bg-[#714B67]'}`}
+              className={`h-full transition-all duration-300 ${
+                isBreakdown ? 'bg-[#DC2626]' : progressPct >= 100 ? 'bg-[#2BA38C]' : 'bg-[#2F3E8F]'
+              }`}
               style={{ width: `${progressPct}%` }}
             />
           </div>
           <div className="flex justify-between items-center text-xs">
-            <span className="font-mono tabular-nums text-[#6B7280]">{progressPct}% done</span>
-            <span className="font-mono tabular-nums font-semibold text-[#111827]">{formatNumber(metresToday)} m today</span>
+            <span className="font-sans tabular-nums text-[#94A3B8]">{progressPct}% done</span>
+            <span className="font-sans tabular-nums font-semibold text-[#0F172A]">{formatNumber(metresToday)} m today</span>
           </div>
         </div>
 
@@ -384,32 +386,35 @@ export function ProductionView() {
         </div>
       </div>
 
-      {/* SECTION 1: RUNNING (n) in green */}
+      {/* SECTION 1: RUNNING (n) in accent teal */}
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
-          RUNNING ({runningList.length})
+        <h3 className="text-xs font-bold text-[#1F7564] uppercase tracking-wider flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#2BA38C]" />
+          <span>RUNNING ({runningList.length})</span>
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {runningList.map(renderMachineCard)}
         </div>
       </div>
 
-      {/* SECTION 2: IDLE (n) in amber */}
+      {/* SECTION 2: IDLE (n) in warning amber */}
       <div className="space-y-3 pt-2">
-        <h3 className="text-xs font-bold text-amber-700 uppercase tracking-wider">
-          IDLE ({idleList.length})
+        <h3 className="text-xs font-bold text-[#B45309] uppercase tracking-wider flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+          <span>IDLE ({idleList.length})</span>
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {idleList.map(renderMachineCard)}
         </div>
       </div>
 
-      {/* SECTION 3: BREAKDOWN (n) in red */}
+      {/* SECTION 3: BREAKDOWN (n) in danger red */}
       <div className="space-y-3 pt-2">
-        <h3 className="text-xs font-bold text-rose-700 uppercase tracking-wider">
-          BREAKDOWN ({breakdownList.length})
+        <h3 className="text-xs font-bold text-[#DC2626] uppercase tracking-wider flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#DC2626]" />
+          <span>BREAKDOWN ({breakdownList.length})</span>
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {breakdownList.map(renderMachineCard)}
         </div>
       </div>

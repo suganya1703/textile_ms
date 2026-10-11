@@ -469,34 +469,34 @@ export function InventoryView() {
     {
       header: 'CLAIM #',
       accessor: 'id',
-      render: (c) => <span className="font-mono font-bold text-xs text-[#714B67]">CLM-{c.id?.toString().padStart(4, '0')}</span>
+      render: (c) => <span className="font-mono font-bold text-xs text-[#2F3E8F]">CLM-{c.id?.toString().padStart(4, '0')}</span>
     },
     {
       header: 'SUPPLIER',
       accessor: 'supplier_name',
       render: (c) => (
         <div>
-          <div className="text-xs font-semibold text-[#111827]">{c.supplier_name}</div>
-          {c.supplier_city && <div className="text-[11px] text-[#6B7280]">{c.supplier_city}</div>}
+          <div className="text-xs font-semibold text-[#0F172A]">{c.supplier_name}</div>
+          {c.supplier_city && <div className="text-[11px] text-[#94A3B8]">{c.supplier_city}</div>}
         </div>
       )
     },
     {
       header: 'BATCH',
       accessor: 'batch_code',
-      render: (c) => <span className="font-mono text-xs text-[#4B5563]">{c.batch_code}</span>
+      render: (c) => <span className="font-mono text-xs text-[#475569]">{c.batch_code}</span>
     },
     {
       header: 'WEIGHT (KG)',
       accessor: 'kg',
       align: 'right',
-      render: (c) => <span className="font-mono font-bold tabular-nums text-xs text-[#111827]">{formatNumber(c.kg, 1)} kg</span>
+      render: (c) => <span className="font-sans font-bold tabular-nums text-xs text-[#0F172A]">{formatNumber(c.kg, 1)} kg</span>
     },
     {
       header: 'CLAIM VALUE',
       accessor: 'claim_amount',
       align: 'right',
-      render: (c) => <span className="font-mono font-semibold tabular-nums text-xs text-[#111827]">{formatINR(c.claim_amount)}</span>
+      render: (c) => <span className="font-sans font-semibold tabular-nums text-xs text-[#0F172A]">{formatINR(c.claim_amount)}</span>
     },
     {
       header: 'REASON',
@@ -525,7 +525,7 @@ export function InventoryView() {
         <select
           value={c.status}
           onChange={(e) => handleUpdateClaimStatus(c.id, e.target.value)}
-          className="text-xs bg-white border border-[#D1D5DB] rounded px-2 py-1 text-[#111827] focus:outline-none focus:border-[#714B67]"
+          className="text-xs bg-white border border-[#E5E9F2] rounded-[8px] px-2 py-1 text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#E3F5F1]"
         >
           <option value="Draft">Draft</option>
           <option value="Raised">Raised</option>
@@ -553,10 +553,10 @@ export function InventoryView() {
       {/* Top Header: Title + Subtitle and Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+          <h1 className="text-[26px] font-bold text-[#0F172A] tracking-tight leading-tight">
             Inventory
           </h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">
+          <p className="text-[13px] text-[#475569] mt-0.5">
             Yarn stock, damage write-offs, batch ledgers, and supplier claims
           </p>
         </div>
@@ -565,14 +565,14 @@ export function InventoryView() {
           {activeTab === 'claims' && (
             <button
               onClick={() => setIsClaimModalOpen(true)}
-              className="bg-white border border-[#D1D5DB] hover:bg-gray-50 text-[#111827] px-3.5 py-2 rounded-[8px] text-sm font-medium transition cursor-pointer"
+              className="bg-white border border-[#E5E9F2] hover:bg-[#E8EBF7] text-[#0F172A] px-3.5 py-2 rounded-[10px] text-sm font-medium transition cursor-pointer"
             >
               + Raise Claim
             </button>
           )}
           <button
             onClick={() => setIsArrivalModalOpen(true)}
-            className="bg-[#714B67] hover:bg-[#5C3D54] text-white px-4 py-2 rounded-[8px] text-sm font-medium transition shadow-xs cursor-pointer shrink-0"
+            className="bg-[#2F3E8F] hover:bg-[#26337A] text-white px-4 py-2 rounded-[10px] text-sm font-medium transition shadow-xs cursor-pointer shrink-0"
           >
             + Record Arrival
           </button>
@@ -632,37 +632,37 @@ export function InventoryView() {
       )}
 
       {/* Grid of 4 Stock Cards per row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stockItems.map((item, idx) => {
           const isLowStock = item.total_kg_available < 500;
           return (
             <div
               key={idx}
-              className={`bg-white rounded-[12px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all ${
+              className={`bg-white rounded-[16px] p-5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all ${
                 isLowStock
-                  ? 'border border-rose-300'
-                  : 'border border-[#E5E7EB]'
+                  ? 'border border-[#FECACA] border-l-4 border-l-[#DC2626]'
+                  : 'border border-[#E5E9F2] border-l-4 border-l-[#2BA38C]'
               }`}
             >
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280] truncate">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#94A3B8] truncate">
                 {item.yarn_type}
               </div>
-              <div className="text-sm text-[#4B5563] mt-0.5 truncate">
+              <div className="text-sm font-medium text-[#0F172A] mt-0.5 truncate">
                 {item.colour}
               </div>
 
               <div className="mt-3">
                 <div
-                  className={`text-[26px] font-bold font-mono tabular-nums leading-tight ${
-                    isLowStock ? 'text-rose-600' : 'text-[#714B67]'
+                  className={`text-[24px] font-bold font-sans tabular-nums leading-tight ${
+                    isLowStock ? 'text-[#DC2626]' : 'text-[#2BA38C]'
                   }`}
                 >
                   {formatNumber(item.total_kg_available)} kg
                 </div>
 
                 {isLowStock && (
-                  <div className="text-[11px] text-rose-600 font-medium flex items-center gap-1 mt-1.5">
-                    <span>⚠️ Low stock (threshold: 500 kg)</span>
+                  <div className="text-[11px] text-[#DC2626] font-medium flex items-center gap-1 mt-1.5">
+                    <span>⚠️ Low stock (min: 500 kg)</span>
                   </div>
                 )}
               </div>
@@ -678,7 +678,7 @@ export function InventoryView() {
         />
         <CardContent className="space-y-4 pt-1">
           <div>
-            <label className="text-xs text-[#6B7280] block mb-1">
+            <label className="text-xs font-semibold text-[#475569] block mb-1">
               Order ID
             </label>
             <div className="flex items-center gap-2 max-w-sm">
@@ -691,14 +691,14 @@ export function InventoryView() {
                   if (matched) setSelectedOrderId(matched.id);
                 }}
                 placeholder="e.g. 7"
-                className="w-32 bg-white border border-[#D1D5DB] rounded-[8px] px-3 py-1.5 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                className="w-36 h-10 bg-white border border-[#E5E9F2] rounded-[10px] px-3.5 text-xs text-[#0F172A] focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
               />
               <button
                 type="button"
                 onClick={handleRunCheck}
-                className="bg-white border border-[#9CA3AF] hover:bg-gray-50 text-[#111827] px-4 py-1.5 rounded-[8px] text-sm font-medium transition-colors cursor-pointer"
+                className="h-10 bg-white border border-[#2F3E8F] hover:bg-[#E8EBF7] text-[#2F3E8F] px-4 rounded-[10px] text-xs font-semibold transition-colors cursor-pointer"
               >
-                Check
+                Check Feasibility
               </button>
             </div>
           </div>
@@ -736,13 +736,13 @@ export function InventoryView() {
       </Card>
 
       {/* Tabs Switcher: Batches vs Claims */}
-      <div className="flex border-b border-[#E5E7EB] gap-6 text-sm font-medium">
+      <div className="flex border-b border-[#E5E9F2] gap-6 text-sm font-medium">
         <button
           onClick={() => setActiveTab('batches')}
           className={`pb-2.5 border-b-2 transition cursor-pointer ${
             activeTab === 'batches'
-              ? 'border-[#714B67] text-[#714B67] font-bold'
-              : 'border-transparent text-[#6B7280] hover:text-[#111827]'
+              ? 'border-[#2F3E8F] text-[#2F3E8F] font-bold'
+              : 'border-transparent text-[#475569] hover:text-[#0F172A]'
           }`}
         >
           Yarn Batches ({batches.length})
@@ -751,8 +751,8 @@ export function InventoryView() {
           onClick={() => setActiveTab('claims')}
           className={`pb-2.5 border-b-2 transition cursor-pointer ${
             activeTab === 'claims'
-              ? 'border-[#714B67] text-[#714B67] font-bold'
-              : 'border-transparent text-[#6B7280] hover:text-[#111827]'
+              ? 'border-[#2F3E8F] text-[#2F3E8F] font-bold'
+              : 'border-transparent text-[#475569] hover:text-[#0F172A]'
           }`}
         >
           Supplier Claims ({claims.length})
@@ -786,7 +786,7 @@ export function InventoryView() {
             action={
               <button
                 onClick={() => setIsClaimModalOpen(true)}
-                className="bg-[#714B67] text-white px-3 py-1.5 rounded-[6px] text-xs font-medium cursor-pointer"
+                className="bg-[#2F3E8F] hover:bg-[#26337A] text-white px-3.5 py-1.5 rounded-[10px] text-xs font-semibold cursor-pointer shadow-xs transition-colors"
               >
                 + Raise Supplier Claim
               </button>
@@ -1088,31 +1088,31 @@ export function InventoryView() {
         subtitle="Chronological transaction events, consumptions, and damage history"
       >
         {ledgerLoading ? (
-          <div className="py-12 text-center text-[#6B7280]">
-            <div className="w-6 h-6 border-2 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <div className="py-12 text-center text-[#475569]">
+            <div className="w-6 h-6 border-2 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             Loading batch ledger...
           </div>
         ) : ledgerData ? (
           <div className="space-y-4">
             {/* Ledger Overview Header */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-[8px] text-xs flex flex-wrap justify-between items-center gap-2">
+            <div className="p-3 bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] text-xs flex flex-wrap justify-between items-center gap-2">
               <div>
-                <span className="font-bold text-[#111827]">{ledgerData.yarn_type}</span>
-                <span className="text-[#6B7280]"> ({ledgerData.colour})</span>
-                <div className="text-[11px] text-[#6B7280]">Supplier: {ledgerData.supplier_name}</div>
+                <span className="font-bold text-[#0F172A]">{ledgerData.yarn_type}</span>
+                <span className="text-[#475569]"> ({ledgerData.colour})</span>
+                <div className="text-[11px] text-[#94A3B8]">Supplier: {ledgerData.supplier_name}</div>
               </div>
-              <div className="flex items-center gap-4 text-right font-mono">
+              <div className="flex items-center gap-4 text-right">
                 <div>
-                  <span className="text-[11px] text-[#6B7280] block">Received</span>
-                  <span className="font-bold text-[#111827]">{formatNumber(ledgerData.kg_received)} kg</span>
+                  <span className="text-[11px] text-[#94A3B8] block">Received</span>
+                  <span className="font-sans font-bold tabular-nums text-[#0F172A]">{formatNumber(ledgerData.kg_received)} kg</span>
                 </div>
                 <div>
-                  <span className="text-[11px] text-[#6B7280] block">Remaining</span>
-                  <span className="font-bold text-[#714B67]">{formatNumber(ledgerData.kg_remaining)} kg</span>
+                  <span className="text-[11px] text-[#94A3B8] block">Remaining</span>
+                  <span className="font-sans font-bold tabular-nums text-[#2F3E8F]">{formatNumber(ledgerData.kg_remaining)} kg</span>
                 </div>
                 <div>
-                  <span className="text-[11px] text-[#6B7280] block">Cost</span>
-                  <span className="font-bold text-[#111827]">₹{ledgerData.cost_per_kg}/kg</span>
+                  <span className="text-[11px] text-[#94A3B8] block">Cost</span>
+                  <span className="font-sans font-bold tabular-nums text-[#0F172A]">₹{ledgerData.cost_per_kg}/kg</span>
                 </div>
               </div>
             </div>

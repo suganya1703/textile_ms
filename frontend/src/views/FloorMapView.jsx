@@ -43,8 +43,8 @@ export function FloorMapView() {
 
   if (loading || !floorData) {
     return (
-      <div className="py-20 text-center text-[#6B7280]">
-        <div className="w-8 h-8 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+      <div className="py-20 text-center text-[#475569]">
+        <div className="w-8 h-8 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading Mill Floor Map...
       </div>
     );
@@ -75,15 +75,15 @@ export function FloorMapView() {
   const getMachineBlockBg = (m, isSelected) => {
     let bg = '';
     if (m.effectiveStatus === 'running') {
-      bg = 'bg-emerald-600 hover:bg-emerald-700';
+      bg = 'bg-[#2BA38C] hover:bg-[#248C78]';
     } else if (m.effectiveStatus === 'breakdown') {
-      bg = 'bg-rose-600 hover:bg-rose-700';
+      bg = 'bg-[#DC2626] hover:bg-[#B91C1C]';
     } else {
-      bg = 'bg-amber-500 hover:bg-amber-600';
+      bg = 'bg-[#F59E0B] hover:bg-[#D97706]';
     }
 
-    const ring = isSelected ? 'ring-2 ring-[#714B67] ring-offset-2' : '';
-    return `${bg} ${ring} p-3 rounded-[8px] text-left transition-all cursor-pointer shadow-xs`;
+    const ring = isSelected ? 'ring-2 ring-[#2F3E8F] ring-offset-2' : '';
+    return `${bg} ${ring} p-3 rounded-[10px] text-left transition-all cursor-pointer shadow-xs`;
   };
 
   const renderMachineBlock = (m) => {
@@ -228,29 +228,29 @@ export function FloorMapView() {
                   </div>
 
                   {selectedMachine.effectiveStatus === 'running' && selectedMachine.current_job ? (
-                    <div className="p-3 bg-purple-50/50 rounded-[8px] border border-purple-100 space-y-2">
-                      <div className="font-semibold text-[#714B67] text-sm">
+                    <div className="p-3 bg-[#E8EBF7] rounded-[10px] border border-[#C7D0EF] space-y-2">
+                      <div className="font-semibold text-[#2F3E8F] text-sm">
                         Active Job #{selectedMachine.current_job.job_id}
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Order:</span>
-                        <span className="font-mono font-bold text-[#111827]">#{selectedMachine.current_job.order_number}</span>
+                        <span className="text-[#475569]">Order:</span>
+                        <span className="font-mono font-bold text-[#0F172A]">#{selectedMachine.current_job.order_number}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Produced:</span>
-                        <span className="font-mono font-semibold text-[#111827]">
+                        <span className="text-[#475569]">Produced:</span>
+                        <span className="font-sans font-semibold tabular-nums text-[#0F172A]">
                           {formatNumber(selectedMachine.current_job.produced_m)} metres
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Progress:</span>
-                        <span className="font-mono font-bold text-[#714B67]">
+                        <span className="text-[#475569]">Progress:</span>
+                        <span className="font-sans font-bold tabular-nums text-[#2F3E8F]">
                           {Math.round(selectedMachine.current_job.progress_pct || 0)}%
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 bg-gray-50 rounded-[8px] border border-gray-200 text-[#6B7280] italic">
+                    <div className="p-3 bg-[#F8FAFC] rounded-[10px] border border-[#E5E9F2] text-[#94A3B8] italic">
                       No active job currently assigned. Machine is on standby.
                     </div>
                   )}

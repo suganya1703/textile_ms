@@ -51,8 +51,8 @@ export function CostingView() {
 
   if (loading || !costingData) {
     return (
-      <div className="py-20 text-center text-[#6B7280]">
-        <div className="w-8 h-8 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+      <div className="py-20 text-center text-[#475569]">
+        <div className="w-8 h-8 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading Order Costing...
       </div>
     );
@@ -135,13 +135,13 @@ export function CostingView() {
         <CardContent className="p-5">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
             <div className="flex-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] block mb-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[#475569] block mb-1">
                 Select Order:
               </label>
               <select
                 value={selectedOrderId}
                 onChange={(e) => setSelectedOrderId(e.target.value)}
-                className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] font-medium focus:outline-none focus:border-[#714B67]"
+                className="w-full bg-[#F8FAFC] border border-[#E5E9F2] rounded-[10px] px-3.5 h-10 text-xs text-[#0F172A] font-medium focus:outline-none focus:border-[#2F3E8F] focus:ring-4 focus:ring-[#E3F5F1]"
               >
                 {orders.map((o) => (
                   <option key={o.order_id} value={o.order_id}>
@@ -175,83 +175,83 @@ export function CostingView() {
             {/* Small Stacked / Multi Bar Chart */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-[#111827]">Cost Structure Distribution</span>
-                <span className="text-[#6B7280] font-mono">Total: {formatINR(selectedOrder.total_cost)}</span>
+                <span className="font-semibold text-[#0F172A]">Cost Structure Distribution</span>
+                <span className="text-[#475569] font-sans tabular-nums font-semibold">Total: {formatINR(selectedOrder.total_cost)}</span>
               </div>
-              <div className="w-full h-3 rounded-full bg-gray-100 overflow-hidden flex">
-                <div style={{ width: `${yarnBarPct}%` }} className="bg-[#714B67]" title={`Yarn: ${yarnBarPct}%`} />
-                <div style={{ width: `${labourBarPct}%` }} className="bg-blue-500" title={`Labour: ${labourBarPct}%`} />
-                <div style={{ width: `${overheadBarPct}%` }} className="bg-amber-500" title={`Overhead: ${overheadBarPct}%`} />
+              <div className="w-full h-3 rounded-full bg-[#F1F5F9] overflow-hidden flex">
+                <div style={{ width: `${yarnBarPct}%` }} className="bg-[#2F3E8F]" title={`Yarn: ${yarnBarPct}%`} />
+                <div style={{ width: `${labourBarPct}%` }} className="bg-[#2BA38C]" title={`Labour: ${labourBarPct}%`} />
+                <div style={{ width: `${overheadBarPct}%` }} className="bg-[#F59E0B]" title={`Overhead: ${overheadBarPct}%`} />
                 <div style={{ width: `${wastageBarPct}%` }} className="bg-orange-500" title={`Wastage: ${wastageBarPct}%`} />
                 {reworkBarPct > 0 && (
-                  <div style={{ width: `${reworkBarPct}%` }} className="bg-rose-500" title={`Rework: ${reworkBarPct}%`} />
+                  <div style={{ width: `${reworkBarPct}%` }} className="bg-[#DC2626]" title={`Rework: ${reworkBarPct}%`} />
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#6B7280] pt-1">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#475569] pt-1">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#714B67]" /> Yarn ({yarnBarPct}%)
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#2F3E8F]" /> Yarn ({yarnBarPct}%)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Labour ({labourBarPct}%)
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#2BA38C]" /> Labour ({labourBarPct}%)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Overhead ({overheadBarPct}%)
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" /> Overhead ({overheadBarPct}%)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> Wastage ({wastageBarPct}%)
                 </span>
                 {reworkBarPct > 0 && (
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Rework ({reworkBarPct}%)
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" /> Rework ({reworkBarPct}%)
                   </span>
                 )}
               </div>
             </div>
 
             {/* Cost Breakdown Rows: yarn, labour, overhead, wastage, rework, total, selling price, margin */}
-            <div className="space-y-2.5 text-sm divide-y divide-[#F3F4F6]">
+            <div className="space-y-2.5 text-sm divide-y divide-[#F1F5F9]">
               <div className="flex justify-between items-center py-2">
-                <span className="text-[#6B7280]">Yarn Cost</span>
-                <span className="font-mono font-medium text-[#111827] tabular-nums">{formatINR(selectedOrder.yarn_cost)}</span>
+                <span className="text-[#475569]">Yarn Cost</span>
+                <span className="font-sans font-medium text-[#0F172A] tabular-nums">{formatINR(selectedOrder.yarn_cost)}</span>
               </div>
 
               <div className="flex justify-between items-center py-2">
-                <span className="text-[#6B7280]">Labour Wages</span>
-                <span className="font-mono font-medium text-[#111827] tabular-nums">{formatINR(selectedOrder.labour_cost)}</span>
+                <span className="text-[#475569]">Labour Wages</span>
+                <span className="font-sans font-medium text-[#0F172A] tabular-nums">{formatINR(selectedOrder.labour_cost)}</span>
               </div>
 
               <div className="flex justify-between items-center py-2">
-                <span className="text-[#6B7280]">Factory Overhead</span>
-                <span className="font-mono font-medium text-[#111827] tabular-nums">{formatINR(selectedOrder.overhead_cost)}</span>
+                <span className="text-[#475569]">Factory Overhead</span>
+                <span className="font-sans font-medium text-[#0F172A] tabular-nums">{formatINR(selectedOrder.overhead_cost)}</span>
               </div>
 
               <div className="flex justify-between items-center py-2">
-                <span className="text-[#6B7280]">Wastage & Scrap Loss</span>
-                <span className="font-mono font-medium text-[#111827] tabular-nums">{formatINR(selectedOrder.wastage_cost)}</span>
+                <span className="text-[#475569]">Wastage & Scrap Loss</span>
+                <span className="font-sans font-medium text-[#0F172A] tabular-nums">{formatINR(selectedOrder.wastage_cost)}</span>
               </div>
 
               {selectedOrder.rework_cost > 0 && (
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-[#6B7280]">Rework Cost</span>
-                  <span className="font-mono font-medium text-rose-600 tabular-nums">{formatINR(selectedOrder.rework_cost)}</span>
+                  <span className="text-[#475569]">Rework Cost</span>
+                  <span className="font-sans font-medium text-[#DC2626] tabular-nums">{formatINR(selectedOrder.rework_cost)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between items-center py-2.5 font-semibold text-[#111827]">
+              <div className="flex justify-between items-center py-2.5 font-semibold text-[#0F172A]">
                 <span>Total Manufacturing Cost</span>
-                <span className="font-mono tabular-nums">{formatINR(selectedOrder.total_cost)}</span>
+                <span className="font-sans tabular-nums">{formatINR(selectedOrder.total_cost)}</span>
               </div>
 
-              <div className="flex justify-between items-center py-2 text-[#111827]">
+              <div className="flex justify-between items-center py-2 text-[#0F172A]">
                 <span className="font-semibold">Selling Price (Revenue)</span>
-                <span className="font-mono font-bold text-emerald-600 tabular-nums">{formatINR(selectedOrder.total_revenue)}</span>
+                <span className="font-sans font-bold text-[#2BA38C] tabular-nums">{formatINR(selectedOrder.total_revenue)}</span>
               </div>
 
-              <div className="flex justify-between items-center pt-3 bg-[#F9FAFB] p-3 rounded-[8px] border border-[#E5E7EB]">
-                <span className="font-bold text-[#111827]">Operating Margin</span>
+              <div className="flex justify-between items-center pt-3 bg-[#F8FAFC] p-3 rounded-[12px] border border-[#E5E9F2]">
+                <span className="font-bold text-[#0F172A]">Operating Margin</span>
                 <span
-                  className={`font-mono font-bold tabular-nums text-base ${
-                    selectedOrder.is_loss ? 'text-rose-600' : 'text-emerald-600'
+                  className={`font-sans font-bold tabular-nums text-base ${
+                    selectedOrder.is_loss ? 'text-[#DC2626]' : 'text-[#2BA38C]'
                   }`}
                 >
                   {selectedOrder.margin_pct > 0 ? `+${selectedOrder.margin_pct}%` : `${selectedOrder.margin_pct}%`} ({formatINR(selectedOrder.net_profit)})

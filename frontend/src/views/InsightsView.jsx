@@ -113,42 +113,42 @@ export function InsightsView() {
     {
       header: 'Batch#',
       accessor: 'batch_no',
-      render: (r) => <span className="font-mono font-bold text-[#714B67] text-xs">{r.batch_no}</span>
+      render: (r) => <span className="font-mono font-bold text-[#2F3E8F] text-xs">{r.batch_no}</span>
     },
     {
       header: 'Type',
       accessor: 'yarn_type',
-      render: (r) => <span className="font-medium text-[#111827] text-xs">{r.yarn_type}</span>
+      render: (r) => <span className="font-medium text-[#0F172A] text-xs">{r.yarn_type}</span>
     },
     {
       header: 'Colour',
       accessor: 'colour',
-      render: (r) => <span className="text-[#4B5563] text-xs">{r.colour}</span>
+      render: (r) => <span className="text-[#475569] text-xs">{r.colour}</span>
     },
     {
       header: 'Consumed',
       accessor: 'consumed_kg',
       align: 'right',
-      render: (r) => <span className="font-mono tabular-nums text-xs text-[#111827]">{formatNumber(r.consumed_kg)} kg</span>
+      render: (r) => <span className="font-sans tabular-nums text-xs text-[#0F172A]">{formatNumber(r.consumed_kg)} kg</span>
     },
     {
       header: 'Produced',
       accessor: 'produced_m',
       align: 'right',
-      render: (r) => <span className="font-mono tabular-nums text-xs text-[#111827]">{formatNumber(r.produced_m)} m</span>
+      render: (r) => <span className="font-sans tabular-nums text-xs text-[#0F172A]">{formatNumber(r.produced_m)} m</span>
     },
     {
       header: 'Expected',
       accessor: 'expected_m',
       align: 'right',
-      render: (r) => <span className="font-mono tabular-nums text-xs text-[#6B7280]">{formatNumber(r.expected_m)} m</span>
+      render: (r) => <span className="font-sans tabular-nums text-xs text-[#94A3B8]">{formatNumber(r.expected_m)} m</span>
     },
     {
       header: 'Wastage %',
       accessor: 'wastage_pct',
       align: 'right',
       render: (r) => (
-        <span className={`font-mono tabular-nums text-xs font-bold ${r.wastage_pct > 5 ? 'text-rose-600' : 'text-emerald-600'}`}>
+        <span className={`font-sans tabular-nums text-xs font-bold ${r.wastage_pct > 5 ? 'text-[#DC2626]' : 'text-[#2BA38C]'}`}>
           {r.wastage_pct}%
         </span>
       )
@@ -169,10 +169,10 @@ export function InsightsView() {
     <div className="space-y-6">
       {/* Page Title & Subtitle */}
       <div>
-        <h1 className="text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+        <h1 className="text-[24px] font-bold text-[#0F172A] tracking-tight leading-tight">
           Insights
         </h1>
-        <p className="text-[13px] text-[#6B7280] mt-0.5">
+        <p className="text-[13px] text-[#64748B] mt-0.5">
           Yield analysis, defect diagnosis and delivery forecasting
         </p>
       </div>
@@ -208,17 +208,17 @@ export function InsightsView() {
             ))}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB] flex items-center justify-between">
+              <div className="p-3 bg-[#F8FAFC] rounded-[8px] border border-[#E2E8F0] flex items-center justify-between">
                 <div>
-                  <strong className="text-[#111827]">Uneven Weave (Loom W-03)</strong>
-                  <p className="text-[#6B7280]">Night shift • Operator: S. Arumugam</p>
+                  <strong className="text-[#0F172A]">Uneven Weave (Loom W-03)</strong>
+                  <p className="text-[#64748B]">Night shift • Operator: S. Arumugam</p>
                 </div>
                 <Badge variant="warning">14 Defect Points</Badge>
               </div>
-              <div className="p-3 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB] flex items-center justify-between">
+              <div className="p-3 bg-[#F8FAFC] rounded-[8px] border border-[#E2E8F0] flex items-center justify-between">
                 <div>
-                  <strong className="text-[#111827]">Broken Pick / Slub (Loom W-01)</strong>
-                  <p className="text-[#6B7280]">Morning shift • Operator: R. Balasubramanian</p>
+                  <strong className="text-[#0F172A]">Broken Pick / Slub (Loom W-01)</strong>
+                  <p className="text-[#64748B]">Morning shift • Operator: R. Balasubramanian</p>
                 </div>
                 <Badge variant="pass">4 Defect Points</Badge>
               </div>
@@ -260,17 +260,17 @@ export function InsightsView() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB] flex items-center justify-between">
+              <div className="p-3 bg-[#F8FAFC] rounded-[8px] border border-[#E2E8F0] flex items-center justify-between">
                 <div>
-                  <strong className="text-[#111827]">Order #ORD-2026-004 (Grey Sheeting)</strong>
-                  <p className="text-[#6B7280]">Buyer: Erode Export Garments • Loom W-02</p>
+                  <strong className="text-[#0F172A]">Order #ORD-2026-004 (Grey Sheeting)</strong>
+                  <p className="text-[#64748B]">Buyer: Erode Export Garments • Loom W-02</p>
                 </div>
                 <Badge variant="breakdown">2.5 Days Late</Badge>
               </div>
-              <div className="p-3 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB] flex items-center justify-between">
+              <div className="p-3 bg-[#F8FAFC] rounded-[8px] border border-[#E2E8F0] flex items-center justify-between">
                 <div>
-                  <strong className="text-[#111827]">Order #ORD-2026-001 (Cotton Twill)</strong>
-                  <p className="text-[#6B7280]">Buyer: Suresh Textiles • Loom W-01</p>
+                  <strong className="text-[#0F172A]">Order #ORD-2026-001 (Cotton Twill)</strong>
+                  <p className="text-[#64748B]">Buyer: Suresh Textiles • Loom W-01</p>
                 </div>
                 <Badge variant="pass">On Schedule</Badge>
               </div>
@@ -294,11 +294,11 @@ export function InsightsView() {
             <form onSubmit={handleSimulate} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-[#6B7280] block mb-1">Fabric Type</label>
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">Fabric Type</label>
                   <select
                     value={simForm.fabric_type}
                     onChange={(e) => setSimForm({ ...simForm, fabric_type: e.target.value })}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] p-2 text-xs font-medium text-[#111827]"
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:ring-2 focus:ring-[#2F3E8F]/20 focus:border-[#2F3E8F] rounded-[8px] p-2 text-xs font-medium text-[#0F172A] outline-none"
                   >
                     <option value="Cotton Poplin 40s">Cotton Poplin 40s</option>
                     <option value="Cotton Twill 2/1">Cotton Twill 2/1</option>
@@ -308,44 +308,44 @@ export function InsightsView() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-[#6B7280] block mb-1">Colour</label>
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">Colour</label>
                   <input
                     type="text"
                     value={simForm.colour}
                     onChange={(e) => setSimForm({ ...simForm, colour: e.target.value })}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] p-2 text-xs text-[#111827]"
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:ring-2 focus:ring-[#2F3E8F]/20 focus:border-[#2F3E8F] rounded-[8px] p-2 text-xs text-[#0F172A] outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-[#6B7280] block mb-1">Quantity (metres)</label>
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">Quantity (metres)</label>
                   <input
                     type="number"
                     step="50"
                     value={simForm.quantity_m}
                     onChange={(e) => setSimForm({ ...simForm, quantity_m: Number(e.target.value) })}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] p-2 text-xs font-mono text-[#111827]"
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:ring-2 focus:ring-[#2F3E8F]/20 focus:border-[#2F3E8F] rounded-[8px] p-2 text-xs font-sans tabular-nums text-[#0F172A] outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-[#6B7280] block mb-1">Deadline</label>
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">Deadline</label>
                   <input
                     type="date"
                     value={simForm.deadline}
                     onChange={(e) => setSimForm({ ...simForm, deadline: e.target.value })}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] p-2 text-xs font-mono text-[#111827]"
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:ring-2 focus:ring-[#2F3E8F]/20 focus:border-[#2F3E8F] rounded-[8px] p-2 text-xs text-[#0F172A] outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-[#6B7280] block mb-1">Price / m (₹)</label>
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">Price / m (₹)</label>
                   <input
                     type="number"
                     step="5"
                     value={simForm.price_per_m}
                     onChange={(e) => setSimForm({ ...simForm, price_per_m: Number(e.target.value) })}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] p-2 text-xs font-mono text-[#111827]"
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:ring-2 focus:ring-[#2F3E8F]/20 focus:border-[#2F3E8F] rounded-[8px] p-2 text-xs font-sans tabular-nums text-[#0F172A] outline-none"
                   />
                 </div>
               </div>
