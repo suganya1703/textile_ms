@@ -41,59 +41,55 @@ export function formatStatus(status) {
 }
 
 const VARIANTS = {
-  // Created: grey
-  created: 'bg-gray-100 text-gray-700 border-gray-200',
-  neutral: 'bg-gray-100 text-gray-700 border-gray-200',
+  // Neutral / Created
+  created: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]',
+  neutral: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]',
+  gray: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]',
 
-  // Yarn Reserved: teal
-  'yarn reserved': 'bg-teal-50 text-teal-700 border-teal-200',
-  yarn_reserved: 'bg-teal-50 text-teal-700 border-teal-200',
-  teal: 'bg-teal-50 text-teal-700 border-teal-200',
+  // Production stages / Primary: deep indigo tint
+  spinning: 'bg-[#E8EBF7] text-[#2F3E8F] border-[#C7D0EF]',
+  weaving: 'bg-[#E8EBF7] text-[#2F3E8F] border-[#C7D0EF]',
+  dyeing: 'bg-[#E8EBF7] text-[#2F3E8F] border-[#C7D0EF]',
+  primary: 'bg-[#E8EBF7] text-[#2F3E8F] border-[#C7D0EF]',
+  blue: 'bg-[#E8EBF7] text-[#2F3E8F] border-[#C7D0EF]',
 
-  // Spinning: purple
-  spinning: 'bg-purple-50 text-purple-700 border-purple-200',
-  purple: 'bg-purple-50 text-purple-700 border-purple-200',
+  // Accent / Success / Highlights: teal tint #E3F5F1
+  'yarn reserved': 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  yarn_reserved: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  ready: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  'ready to dispatch': 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  'ready for dispatch': 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  dispatched: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  pass: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  passed: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  running: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  'grade a': 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  'grade-a': 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  teal: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  accent: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  green: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
+  success: 'bg-[#E3F5F1] text-[#1F7564] border-[#A2DFD4]',
 
-  // Weaving/Dyeing: blue
-  weaving: 'bg-blue-50 text-blue-700 border-blue-200',
-  dyeing: 'bg-blue-50 text-blue-700 border-blue-200',
-  blue: 'bg-blue-50 text-blue-700 border-blue-200',
+  // Warning Amber: idle, pending, rework, grade B, QC
+  idle: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  pending: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  qc: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  'quality check': 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  'qc pending': 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  rework: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  'grade b': 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  'grade-b': 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  amber: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  yellow: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  warning: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
 
-  // QC / Pending: yellow
-  qc: 'bg-amber-50 text-amber-700 border-amber-200',
-  'quality check': 'bg-amber-50 text-amber-700 border-amber-200',
-  pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  'qc pending': 'bg-amber-50 text-amber-700 border-amber-200',
-  yellow: 'bg-amber-50 text-amber-700 border-amber-200',
-  warning: 'bg-amber-50 text-amber-700 border-amber-200',
-
-  // Ready / Dispatched / Passed / Running: green
-  ready: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'ready to dispatch': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'ready for dispatch': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  dispatched: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  pass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  passed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  running: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'grade a': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'grade-a': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-
-  // Idle: amber
-  idle: 'bg-amber-50 text-amber-700 border-amber-200',
-  amber: 'bg-amber-50 text-amber-700 border-amber-200',
-  rework: 'bg-amber-50 text-amber-700 border-amber-200',
-  'grade b': 'bg-amber-50 text-amber-700 border-amber-200',
-  'grade-b': 'bg-amber-50 text-amber-700 border-amber-200',
-
-  // Breakdown / Rejected: red
-  breakdown: 'bg-rose-50 text-rose-700 border-rose-200',
-  reject: 'bg-rose-50 text-rose-700 border-rose-200',
-  rejected: 'bg-rose-50 text-rose-700 border-rose-200',
-  loss: 'bg-rose-50 text-rose-700 border-rose-200',
-  red: 'bg-rose-50 text-rose-700 border-rose-200',
-  danger: 'bg-rose-50 text-rose-700 border-rose-200'
+  // Danger Red: breakdown, reject, loss
+  breakdown: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
+  reject: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
+  rejected: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
+  loss: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
+  danger: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
+  red: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]'
 };
 
 export function Badge({ children, variant = 'neutral', size = 'md', className = '' }) {

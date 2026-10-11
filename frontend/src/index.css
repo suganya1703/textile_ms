@@ -12,55 +12,98 @@
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-primary: #714B67;
-  --color-primary-dark: #5B3B52;
-  --color-sidebar: #744B68;
+  --color-primary: #2F3E8F;
+  --color-primary-hover: #26337A;
+  --color-primary-tint: #E8EBF7;
+  --color-sidebar: #1E2A5E;
+  --color-sidebar-hover: #172049;
 
-  --color-loomdo-primary: #714B67;
-  --color-loomdo-primary-dark: #5B3B52;
-  --color-loomdo-primary-deep: #744B68;
-  --color-loomdo-teal: #714B67;
-  --color-loomdo-teal-dark: #5B3B52;
+  --color-accent: #2BA38C;
+  --color-accent-hover: #248C78;
+  --color-accent-tint: #E3F5F1;
 
-  --color-status-running: #22C55E;
+  --color-warning: #F59E0B;
+  --color-warning-tint: #FEF3C7;
+  --color-danger: #DC2626;
+  --color-danger-tint: #FEE2E2;
+
+  --color-bg-page: #F5F7FB;
+  --color-card-border: #E5E9F2;
+  --color-text-heading: #0F172A;
+  --color-text-body: #475569;
+  --color-text-muted: #94A3B8;
+
+  --color-loomdo-primary: #2F3E8F;
+  --color-loomdo-primary-dark: #26337A;
+  --color-loomdo-primary-light: #E8EBF7;
+  --color-loomdo-teal: #2BA38C;
+  --color-loomdo-teal-dark: #248C78;
+  --color-loomdo-teal-light: #E3F5F1;
+
+  --color-status-running: #2BA38C;
   --color-status-idle: #F59E0B;
-  --color-status-breakdown: #EF4444;
-  --color-status-gradeA: #16A34A;
-  --color-status-gradeB: #D97706;
+  --color-status-breakdown: #DC2626;
+  --color-status-gradeA: #2BA38C;
+  --color-status-gradeB: #F59E0B;
   --color-status-reject: #DC2626;
 }
 
 :root {
-  --color-primary: #714B67;
-  --color-primary-dark: #5B3B52;
-  --color-sidebar: #744B68;
+  --color-primary: #2F3E8F;
+  --color-primary-hover: #26337A;
+  --color-primary-tint: #E8EBF7;
+  --color-sidebar: #1E2A5E;
+  --color-sidebar-hover: #172049;
 
-  --color-loomdo-primary: #714B67;
-  --color-loomdo-primary-dark: #5B3B52;
-  --color-loomdo-primary-deep: #744B68;
-  --color-loomdo-teal: #714B67;
-  --color-loomdo-teal-dark: #5B3B52;
+  --color-accent: #2BA38C;
+  --color-accent-hover: #248C78;
+  --color-accent-tint: #E3F5F1;
+
+  --color-warning: #F59E0B;
+  --color-warning-tint: #FEF3C7;
+  --color-danger: #DC2626;
+  --color-danger-tint: #FEE2E2;
+
+  --color-bg-page: #F5F7FB;
+  --color-card-border: #E5E9F2;
+  --color-text-heading: #0F172A;
+  --color-text-body: #475569;
+  --color-text-muted: #94A3B8;
+
+  --color-loomdo-primary: #2F3E8F;
+  --color-loomdo-primary-dark: #26337A;
+  --color-loomdo-primary-light: #E8EBF7;
+  --color-loomdo-teal: #2BA38C;
+  --color-loomdo-teal-dark: #248C78;
+  --color-loomdo-teal-light: #E3F5F1;
 
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
-  color: #111827;
-  background-color: #F3F4F6;
+  color: #475569;
+  background-color: #F5F7FB;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  background-color: #F3F4F6;
+  background-color: #F5F7FB;
   font-family: var(--font-sans);
   font-size: 14px;
-  color: #111827;
+  color: #475569;
 }
 
-/* Tabular numbers for all numbers, tables, metrics */
-table, .tabular-nums, input[type="number"], .font-mono {
+/* Tabular numbers for all numbers, tables, metrics using Inter font */
+table, .tabular-nums, input[type="number"] {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.font-mono {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
@@ -74,11 +117,11 @@ table, .tabular-nums, input[type="number"], .font-mono {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(30, 42, 94, 0.2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(30, 42, 94, 0.4);
 }
 
 @media print {

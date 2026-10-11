@@ -1,7 +1,8 @@
 // Utility formatting functions for Loomdo
 
 /**
- * Format a number into Indian currency representation (e.g. ₹3,29,220.00).
+ * Format a number into Indian currency representation (e.g. ₹3,29,220 or -₹37,103).
+ * Formats negative values with minus sign BEFORE the rupee symbol: -₹X
  * Handles numbers, strings, and undefined/null gracefully.
  */
 export function formatINR(amount, decimals = 2) {
@@ -9,11 +10,13 @@ export function formatINR(amount, decimals = 2) {
     return decimals === 2 ? '₹0.00' : '₹0';
   }
   const num = Number(amount);
-  const formatted = num.toLocaleString('en-IN', {
+  const isNegative = num < 0;
+  const absNum = Math.abs(num);
+  const formatted = absNum.toLocaleString('en-IN', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
   });
-  return `₹${formatted}`;
+  return isNegative ? `-₹${formatted}` : `₹${formatted}`;
 }
 
 /**
@@ -23,8 +26,12 @@ export function formatNumber(val, decimals = 0) {
   if (val === undefined || val === null || isNaN(Number(val))) {
     return '0';
   }
-  return Number(val).toLocaleString('en-IN', {
+  const num = Number(val);
+  const isNegative = num < 0;
+  const absNum = Math.abs(num);
+  const formatted = absNum.toLocaleString('en-IN', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
   });
+  return isNegative ? `-${formatted}` : formatted;
 }
