@@ -32,6 +32,14 @@ function AppContent() {
     const savedRole = localStorage.getItem('loomdo_role');
     return ROLE_MAP[savedRole] || DEMO_ROLES[0];
   });
+  const getInitialPathRoll = () => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/passport')) {
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      return parts.length > 1 ? decodeURIComponent(parts[1]) : 'ROLL-20261001-0001';
+    }
+    return 'ROLL-20261001-0001';
+  };
+
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/track')) return 'tracking';
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/passport')) return 'passport';
@@ -40,8 +48,25 @@ function AppContent() {
     return role.defaultTab || 'dashboard';
   });
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState('ORD-2026-001');
-  const [selectedPassportRoll, setSelectedPassportRoll] = useState('ROLL-20261001-0001');
+  const [selectedPassportRoll, setSelectedPassportRoll] = useState(getInitialPathRoll);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/passport')) {
+        const parts = path.split('/').filter(Boolean);
+        if (parts.length > 1) setSelectedPassportRoll(decodeURIComponent(parts[1]));
+        setActiveTab('passport');
+      } else if (path.startsWith('/track/')) {
+        const parts = path.split('/').filter(Boolean);
+        if (parts.length > 1) setSelectedTrackingOrder(decodeURIComponent(parts[1]));
+        setActiveTab('tracking');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleLogin = (role) => {
     const targetRole = role || DEMO_ROLES[0];
@@ -71,11 +96,18 @@ function AppContent() {
   const handleOpenTracking = (orderNumber) => {
     setSelectedTrackingOrder(orderNumber || 'ORD-2026-001');
     setActiveTab('tracking');
+    if (typeof window !== 'undefined' && window.history.pushState) {
+      window.history.pushState({}, '', `/track/${encodeURIComponent(orderNumber || 'ORD-2026-001')}`);
+    }
   };
 
   const handleOpenPassport = (rollNumber) => {
-    setSelectedPassportRoll(rollNumber || 'ROLL-20261001-0001');
+    const code = rollNumber || 'ROLL-20261001-0001';
+    setSelectedPassportRoll(code);
     setActiveTab('passport');
+    if (typeof window !== 'undefined' && window.history.pushState) {
+      window.history.pushState({}, '', `/passport/${encodeURIComponent(code)}`);
+    }
   };
 
   // Standalone public view renders (NO sidebar, public access)

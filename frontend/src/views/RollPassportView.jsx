@@ -80,7 +80,14 @@ export function RollPassportView({ rollNumber = 'ROLL-20261001-0001', onBack }) 
   }
 
   const { traceability, defects } = rollData;
-  const qrUrl = `http://127.0.0.1:5173/passport/${rollData.roll_number}`;
+  const defaultHost = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+    ? '172.17.63.194'
+    : (typeof window !== 'undefined' ? window.location.hostname : '172.17.63.194');
+  const defaultPort = (typeof window !== 'undefined' && window.location.port) ? window.location.port : '5173';
+  const [networkHost, setNetworkHost] = useState(defaultHost);
+  const [showConfig, setShowConfig] = useState(false);
+
+  const qrUrl = `http://${networkHost}:${defaultPort}/passport/${rollData.roll_number}`;
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between selection:bg-loomdo-primary selection:text-white">
@@ -175,17 +182,39 @@ export function RollPassportView({ rollNumber = 'ROLL-20261001-0001', onBack }) 
           </div>
 
           {/* Local QR Code Canvas Container */}
-          <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 shrink-0 text-center">
+          <div className="flex flex-col items-center justify-center p-3.5 bg-slate-50 rounded-xl border border-slate-200 shrink-0 text-center max-w-[210px]">
             <QRCodeSVG
               value={qrUrl}
-              size={130}
+              size={132}
               level="H"
               includeMargin={true}
               fgColor="#1E293B"
             />
-            <span className="text-[10px] font-mono font-bold text-slate-500 mt-1 uppercase tracking-wider">
-              Scan to Verify
+            <span className="text-[10px] font-mono font-bold text-slate-700 mt-1 uppercase tracking-wider">
+              Scan with Mobile
             </span>
+            <span className="text-[9px] font-mono text-slate-500 break-all mt-0.5 leading-tight select-all">
+              {qrUrl}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowConfig(!showConfig)}
+              className="mt-1 text-[10px] text-[#2F3E8F] underline hover:text-[#26337A] font-medium cursor-pointer"
+            >
+              {showConfig ? 'Hide Wi-Fi IP setting' : 'Change Wi-Fi IP'}
+            </button>
+            {showConfig && (
+              <div className="mt-2 w-full text-left">
+                <label className="text-[9px] font-semibold text-slate-500 block mb-0.5">PC Wi-Fi IP:</label>
+                <input
+                  type="text"
+                  value={networkHost}
+                  onChange={(e) => setNetworkHost(e.target.value)}
+                  className="w-full text-[10px] font-mono p-1 bg-white border border-slate-300 rounded outline-none"
+                  placeholder="e.g. 172.17.63.194"
+                />
+              </div>
+            )}
           </div>
         </div>
 
