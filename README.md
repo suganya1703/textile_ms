@@ -125,10 +125,9 @@ Open http://localhost:5173. Everything works with the internet turned off after 
 
 | Role | Email | Password |
 |---|---|---|
-| Owner | _fill in_ | _fill in_ |
-| Store | _fill in_ | _fill in_ |
-| Floor | _fill in_ | _fill in_ |
-| QC | _fill in_ | _fill in_ |
+| Owner | owner@everesttextiles.in | owner@123|
+| Store | store@everesttextiles.in|  store@123|
+
 
 ### Resetting the demo
 
@@ -244,14 +243,6 @@ Tests cover the validation rules, four-point grading, wage calculation, the disp
 
 ---
 
-## 16. Team
 
-| Name | Responsibility | Branch |
-|---|---|---|
-| Suganya S | _fill in_ | _fill in_ |
-| Deepika | _fill in_ | _fill in_ |
-| Brindha | _fill in_ | _fill in_ |
-
-Contributions are visible in the commit history and pull requests of this repository.
 
 Built for the Odoo x NMIT Bangalore Hackathon 2026.
