@@ -12,15 +12,22 @@
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-primary: #714B67;
-  --color-primary-dark: #5B3B52;
-  --color-sidebar: #744B68;
+  /* Primary Deep Indigo Theme */
+  --color-primary: #2F3E8F;
+  --color-primary-dark: #232F70;
+  --color-primary-light: #EEF2FF;
+  --color-sidebar: #1E285C;
 
-  --color-loomdo-primary: #714B67;
-  --color-loomdo-primary-dark: #5B3B52;
-  --color-loomdo-primary-deep: #744B68;
-  --color-loomdo-teal: #714B67;
-  --color-loomdo-teal-dark: #5B3B52;
+  /* Accent Teal Theme */
+  --color-accent: #2BA38C;
+  --color-accent-dark: #1F7D6B;
+  --color-accent-light: #E6F6F3;
+
+  --color-loomdo-primary: #2F3E8F;
+  --color-loomdo-primary-dark: #232F70;
+  --color-loomdo-primary-deep: #1E285C;
+  --color-loomdo-teal: #2BA38C;
+  --color-loomdo-teal-dark: #1F7D6B;
 
   --color-status-running: #22C55E;
   --color-status-idle: #F59E0B;
@@ -31,15 +38,20 @@
 }
 
 :root {
-  --color-primary: #714B67;
-  --color-primary-dark: #5B3B52;
-  --color-sidebar: #744B68;
+  --color-primary: #2F3E8F;
+  --color-primary-dark: #232F70;
+  --color-primary-light: #EEF2FF;
+  --color-sidebar: #1E285C;
 
-  --color-loomdo-primary: #714B67;
-  --color-loomdo-primary-dark: #5B3B52;
-  --color-loomdo-primary-deep: #744B68;
-  --color-loomdo-teal: #714B67;
-  --color-loomdo-teal-dark: #5B3B52;
+  --color-accent: #2BA38C;
+  --color-accent-dark: #1F7D6B;
+  --color-accent-light: #E6F6F3;
+
+  --color-loomdo-primary: #2F3E8F;
+  --color-loomdo-primary-dark: #232F70;
+  --color-loomdo-primary-deep: #1E285C;
+  --color-loomdo-teal: #2BA38C;
+  --color-loomdo-teal-dark: #1F7D6B;
 
   font-family: var(--font-sans);
   font-size: 14px;
@@ -127,6 +139,19 @@ table, .tabular-nums, input[type="number"], .font-mono {
   color: #6B7280;
 }
 
+/* ERP Control Panel and Stage Chevron helpers */
+.erp-chevron-clip {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+}
+
+.erp-chevron-clip-first {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+}
+
+.erp-chevron-clip-last {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
@@ -136,11 +161,11 @@ table, .tabular-nums, input[type="number"], .font-mono {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(47, 62, 143, 0.2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(47, 62, 143, 0.4);
 }
 
 @media print {

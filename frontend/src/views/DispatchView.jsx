@@ -17,6 +17,7 @@ import {
   Select,
   Table,
   PageHeader,
+  ControlPanel,
   formatStatus,
   formatNumber,
   formatINR,
@@ -26,10 +27,13 @@ import { api } from '../api/client';
 import { PrintLabelsModal } from '../components/common/RollLabel';
 
 export function DispatchView() {
-  const [activeTab, setActiveTab] = useState('Dispatch Rolls'); // 'Dispatch Rolls' or 'Finished Stock'
+  const [activeTab, setActiveTab] = useState('History'); // 'History' | 'Dispatch Rolls' | 'Finished Stock'
   const [finishedStock, setFinishedStock] = useState(null);
   const [buyers, setBuyers] = useState([]);
+  const [dispatchHistory, setDispatchHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyFilter, setHistoryFilter] = useState('all');
   const { showToast } = useToast();
 
   // Wizard / Dispatch State
@@ -55,13 +59,15 @@ export function DispatchView() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [stockRes, buyRes, setRes] = await Promise.all([
+      const [stockRes, buyRes, histRes, setRes] = await Promise.all([
         api.getFinishedStock(),
         api.getBuyers(),
+        api.getDispatchHistory().catch(() => []),
         api.getSettings().catch(() => ({}))
       ]);
       setFinishedStock(stockRes);
       setBuyers(buyRes || []);
+      setDispatchHistory(histRes || []);
       setSettings(setRes || {});
 
       if (buyRes?.length > 0 && !selectedBuyerId) {
@@ -186,7 +192,7 @@ export function DispatchView() {
           type="checkbox"
           checked={eligibleRolls.length > 0 && selectedRollIds.size === eligibleRolls.length}
           onChange={handleSelectAll}
-          className="rounded border-gray-300 text-[#714B67] focus:ring-[#714B67] cursor-pointer"
+          className="rounded border-gray-300 text-[#2F3E8F] focus:ring-[#2F3E8F] cursor-pointer"
         />
       ),
       accessor: 'id',
@@ -195,15 +201,16 @@ export function DispatchView() {
           type="checkbox"
           checked={selectedRollIds.has(r.id)}
           onChange={() => toggleRoll(r.id)}
-          className="rounded border-gray-300 text-[#714B67] focus:ring-[#714B67] cursor-pointer"
+          className="rounded border-gray-300 text-[#2F3E8F] focus:ring-[#2F3E8F] cursor-pointer"
         />
       )
     },
     {
       header: '#',
       accessor: 'roll_number',
+      sortable: true,
       render: (r) => (
-        <span className="font-mono font-bold text-[#714B67] text-xs sm:text-sm">
+        <span className="font-mono font-bold text-[#2F3E8F] text-xs sm:text-sm">
           {r.roll_number}
         </span>
       )
@@ -211,6 +218,7 @@ export function DispatchView() {
     {
       header: 'Order #',
       accessor: 'order_number',
+      sortable: true,
       render: (r) => (
         <span className="font-mono font-semibold text-[#111827] text-xs sm:text-sm">
           #{r.order_number}
@@ -220,6 +228,7 @@ export function DispatchView() {
     {
       header: 'Dye Lot',
       accessor: 'dye_lot',
+      sortable: true,
       render: (r) => (
         <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-[#111827]">
           {r.dye_lot || 'LOT-NB-01'}
@@ -229,9 +238,10 @@ export function DispatchView() {
     {
       header: 'Length',
       accessor: 'length_m',
+      sortable: true,
       align: 'right',
       render: (r) => (
-        <span className="font-mono tabular-nums text-[#111827]">
+        <span className="font-mono tabular-nums text-[#111827] font-semibold">
           {formatNumber(r.length_m)} m
         </span>
       )
@@ -239,6 +249,7 @@ export function DispatchView() {
     {
       header: 'Grade',
       accessor: 'grade',
+      sortable: true,
       align: 'center',
       render: (r) => (
         <Badge variant={r.grade === 'A' ? 'grade-a' : 'grade-b'}>
@@ -249,6 +260,7 @@ export function DispatchView() {
     {
       header: 'Rate / m',
       accessor: 'order_price_per_m',
+      sortable: true,
       align: 'right',
       render: (r) => (
         <span className="font-mono tabular-nums text-[#111827]">
@@ -266,7 +278,7 @@ export function DispatchView() {
             setRollsToPrint([r]);
             setIsPrintModalOpen(true);
           }}
-          className="flex items-center gap-1 text-xs text-[#714B67] hover:bg-purple-50 px-2 py-1 rounded border border-purple-200 transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs text-[#2F3E8F] hover:bg-indigo-50 px-2 py-1 rounded border border-indigo-200 transition-colors cursor-pointer"
           title="Print 4x2 QR Passport Label"
         >
           <QrCode className="w-3.5 h-3.5" />
@@ -276,44 +288,220 @@ export function DispatchView() {
     }
   ];
 
+  // Dispatch History Table Columns
+  const historyColumns = [
+    {
+      header: 'DISPATCH #',
+      accessor: 'dispatch_number',
+      sortable: true,
+      render: (d) => (
+        <span className="font-mono font-bold text-xs text-[#2F3E8F]">
+          {d.dispatch_number}
+        </span>
+      )
+    },
+    {
+      header: 'BUYER',
+      accessor: 'buyer_name',
+      sortable: true,
+      render: (d) => (
+        <span className="font-semibold text-xs text-gray-900">
+          {d.buyer_name}
+        </span>
+      )
+    },
+    {
+      header: 'VEHICLE NO',
+      accessor: 'vehicle_no',
+      sortable: true,
+      render: (d) => (
+        <span className="font-mono text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+          {d.vehicle_no || 'TN-38-EX-1001'}
+        </span>
+      )
+    },
+    {
+      header: 'ROLLS',
+      accessor: 'roll_count',
+      sortable: true,
+      align: 'right',
+      render: (d) => (
+        <span className="font-mono tabular-nums text-xs font-semibold text-gray-900">
+          {d.roll_count || 1}
+        </span>
+      )
+    },
+    {
+      header: 'TOTAL METRES',
+      accessor: 'total_metres',
+      sortable: true,
+      align: 'right',
+      render: (d) => (
+        <span className="font-mono tabular-nums text-xs text-gray-900 font-semibold">
+          {formatNumber(d.total_metres || 0)} m
+        </span>
+      )
+    },
+    {
+      header: 'INVOICE #',
+      accessor: 'invoice_no',
+      sortable: true,
+      render: (d) => (
+        <span className="font-mono text-xs text-gray-600">
+          {d.invoice_no ? `#${d.invoice_no}` : 'INV-GEN'}
+        </span>
+      )
+    },
+    {
+      header: 'INVOICE TOTAL',
+      accessor: 'invoice_total',
+      sortable: true,
+      align: 'right',
+      render: (d) => (
+        <span className="font-mono tabular-nums text-xs font-bold text-[#2F3E8F]">
+          {formatINR(d.invoice_total || 0)}
+        </span>
+      )
+    },
+    {
+      header: 'STATUS',
+      accessor: 'id',
+      render: () => (
+        <Badge variant="accent">
+          Dispatched
+        </Badge>
+      )
+    }
+  ];
+
+  // History Filter & Search computation
+  const historyFilters = [
+    { key: 'all', label: 'All Dispatches', count: dispatchHistory.length },
+    ...buyers.slice(0, 3).map((b) => ({
+      key: `buyer-${b.id}`,
+      label: b.name.split(' ')[0],
+      count: dispatchHistory.filter((d) => d.buyer_id === b.id).length
+    }))
+  ];
+
+  const filteredHistory = dispatchHistory.filter((d) => {
+    if (historyFilter !== 'all' && historyFilter.startsWith('buyer-')) {
+      const buyerId = Number(historyFilter.replace('buyer-', ''));
+      if (d.buyer_id !== buyerId) return false;
+    }
+    if (historySearch.trim()) {
+      const q = historySearch.toLowerCase().trim();
+      const num = String(d.dispatch_number || '').toLowerCase();
+      const bname = String(d.buyer_name || '').toLowerCase();
+      const veh = String(d.vehicle_no || '').toLowerCase();
+      const inv = String(d.invoice_no || '').toLowerCase();
+      return num.includes(q) || bname.includes(q) || veh.includes(q) || inv.includes(q);
+    }
+    return true;
+  });
+
+  const totalHistoryMetres = filteredHistory.reduce((acc, d) => acc + (d.total_metres || 0), 0);
+  const totalHistoryRolls = filteredHistory.reduce((acc, d) => acc + (d.roll_count || 0), 0);
+  const totalHistoryInvoice = filteredHistory.reduce((acc, d) => acc + (d.invoice_total || 0), 0);
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Page Title & Subtitle */}
       <div>
         <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
           Dispatch
         </h1>
         <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
-          Warehouse staging, dye-lot guard and invoice generation
+          Consignment history, warehouse staging, dye-lot guard and invoice generation
         </p>
       </div>
 
-      {/* Tabs: "Dispatch Rolls" and "Finished Stock" */}
-      <div className="flex items-center gap-3 text-xs pt-1">
-        {['Dispatch Rolls', 'Finished Stock'].map((item) => {
-          const isActive = activeTab === item;
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+        {[
+          { key: 'History', label: 'Dispatch History' },
+          { key: 'Dispatch Rolls', label: '+ New Dispatch' },
+          { key: 'Finished Stock', label: 'Finished Stock' }
+        ].map((item) => {
+          const isActive = activeTab === item.key;
           return (
             <button
-              key={item}
-              onClick={() => setActiveTab(item)}
-              className={`transition-all cursor-pointer ${
+              key={item.key}
+              onClick={() => setActiveTab(item.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-white text-[#111827] shadow-xs font-semibold px-3.5 py-1.5 rounded-[8px]'
-                  : 'text-[#6B7280] hover:text-[#111827] px-2 py-1.5 font-normal'
+                  ? 'bg-[#2F3E8F] text-white shadow-xs'
+                  : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
               }`}
             >
-              {item}
+              {item.label}
             </button>
           );
         })}
       </div>
 
-      {activeTab === 'Dispatch Rolls' ? (
-        <div className="space-y-6">
-          {/* "Select Buyer" card with Buyer and Vehicle No. inputs and a "Load Rolls" outlined button */}
+      {activeTab === 'History' && (
+        <div className="space-y-4">
+          <ControlPanel
+            breadcrumbs={[
+              { label: 'Dispatch', onClick: () => setActiveTab('History') },
+              { label: 'Consignments & History' }
+            ]}
+            searchPlaceholder="Search dispatch #, buyer, vehicle, invoice..."
+            searchValue={historySearch}
+            onSearchChange={setHistorySearch}
+            filters={historyFilters}
+            activeFilter={historyFilter}
+            onFilterChange={setHistoryFilter}
+            primaryAction={{
+              label: '+ New Dispatch',
+              onClick: () => setActiveTab('Dispatch Rolls')
+            }}
+          />
+
           <Card>
             <CardHeader
-              title="Select Buyer"
+              title="Consignment Dispatch History"
+              subtitle={`Showing ${filteredHistory.length} completed dispatches`}
+            />
+            <CardContent className="pt-1">
+              <div className="overflow-x-auto">
+                <Table
+                  columns={historyColumns}
+                  data={filteredHistory}
+                  keyField="id"
+                  emptyMessage="No dispatch consignments match your filter."
+                />
+                <div className="mt-2 px-4 py-2.5 bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg flex flex-wrap items-center justify-between text-xs font-semibold text-gray-700">
+                  <span>Dispatches: <strong className="font-mono text-gray-900">{filteredHistory.length}</strong></span>
+                  <span>Total Rolls: <strong className="font-mono text-[#2F3E8F]">{totalHistoryRolls}</strong></span>
+                  <span>Total Length: <strong className="font-mono text-gray-900">{formatNumber(totalHistoryMetres)} m</strong></span>
+                  <span>Total Invoiced: <strong className="font-mono text-[#2BA38C] text-sm">{formatINR(totalHistoryInvoice)}</strong></span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === 'Dispatch Rolls' && (
+        <div className="space-y-4">
+          <ControlPanel
+            breadcrumbs={[
+              { label: 'Dispatch', onClick: () => setActiveTab('History') },
+              { label: 'New Dispatch Wizard' }
+            ]}
+            primaryAction={{
+              label: '← View History',
+              onClick: () => setActiveTab('History'),
+              variant: 'secondary'
+            }}
+          />
+
+          {/* Select Buyer Card */}
+          <Card>
+            <CardHeader
+              title="Select Buyer & Transport"
               subtitle="Choose buyer and transport details to pull QC-cleared warehouse rolls"
             />
             <CardContent className="space-y-4 pt-1">
@@ -328,7 +516,7 @@ export function DispatchView() {
                       setSelectedBuyerId(e.target.value);
                       setRollsLoaded(false);
                     }}
-                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] font-medium focus:outline-none focus:border-[#714B67]"
+                    className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] font-medium focus:outline-none focus:border-[#2F3E8F]"
                   >
                     {buyers.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -347,18 +535,18 @@ export function DispatchView() {
                     value={vehicleNo}
                     onChange={(e) => setVehicleNo(e.target.value)}
                     placeholder="e.g. TN-38-CY-4821"
-                    className="w-full font-mono uppercase bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                    className="w-full font-mono uppercase bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] focus:outline-none focus:border-[#2F3E8F]"
                   />
                 </div>
 
                 <div>
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     onClick={handleLoadRolls}
                     loading={loadingRolls}
                     className="w-full sm:w-auto"
                   >
-                    Load Rolls
+                    Load Available Rolls
                   </Button>
                 </div>
               </div>
@@ -450,7 +638,7 @@ export function DispatchView() {
 
                     <div className="flex justify-between items-center pt-2 text-base font-bold text-[#111827]">
                       <span>Total Invoice</span>
-                      <span className="font-mono text-[#714B67]">
+                      <span className="font-mono text-[#2F3E8F]">
                         {formatINR(finalInvoiceTotal)}
                       </span>
                     </div>
@@ -472,36 +660,50 @@ export function DispatchView() {
             </div>
           )}
         </div>
-      ) : (
-        /* Finished Stock View */
-        <Card>
-          <CardHeader
-            title="Finished Stock Inventory"
-            subtitle="Rolls on warehouse shelf inspected, graded, and awaiting dispatch"
+      )}
+
+      {activeTab === 'Finished Stock' && (
+        <div className="space-y-4">
+          <ControlPanel
+            breadcrumbs={[
+              { label: 'Dispatch', onClick: () => setActiveTab('History') },
+              { label: 'Finished Goods Inventory' }
+            ]}
+            primaryAction={{
+              label: '+ Dispatch Rolls',
+              onClick: () => setActiveTab('Dispatch Rolls')
+            }}
           />
-          <CardContent className="space-y-4 pt-1">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB]">
-                <div className="text-xs font-semibold text-[#6B7280] uppercase">Total Ready Rolls</div>
-                <div className="text-2xl font-bold font-mono text-[#714B67] mt-1">
-                  {finishedStock?.total_ready_rolls || 14}
+
+          <Card>
+            <CardHeader
+              title="Finished Stock Inventory"
+              subtitle="Rolls on warehouse shelf inspected, graded, and awaiting dispatch"
+            />
+            <CardContent className="space-y-4 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 bg-[#EEF2FF] rounded-[8px] border border-[#C7D2FE]">
+                  <div className="text-xs font-semibold text-[#2F3E8F] uppercase">Total Ready Rolls</div>
+                  <div className="text-2xl font-bold font-mono text-[#2F3E8F] mt-1">
+                    {finishedStock?.total_ready_rolls || 14}
+                  </div>
+                </div>
+                <div className="p-4 bg-teal-50 rounded-[8px] border border-teal-200">
+                  <div className="text-xs font-semibold text-[#1F7D6B] uppercase">Total Metres on Shelf</div>
+                  <div className="text-2xl font-bold font-mono text-[#1F7D6B] mt-1">
+                    {formatNumber(finishedStock?.total_ready_metres || 1420)} m
+                  </div>
+                </div>
+                <div className="p-4 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB]">
+                  <div className="text-xs font-semibold text-[#6B7280] uppercase">Active Dye Lots</div>
+                  <div className="text-2xl font-bold font-mono text-[#111827] mt-1">
+                    {finishedStock?.lots_count || 4}
+                  </div>
                 </div>
               </div>
-              <div className="p-4 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB]">
-                <div className="text-xs font-semibold text-[#6B7280] uppercase">Total Metres on Shelf</div>
-                <div className="text-2xl font-bold font-mono text-[#111827] mt-1">
-                  {formatNumber(finishedStock?.total_ready_metres || 1420)} m
-                </div>
-              </div>
-              <div className="p-4 bg-[#F9FAFB] rounded-[8px] border border-[#E5E7EB]">
-                <div className="text-xs font-semibold text-[#6B7280] uppercase">Active Dye Lots</div>
-                <div className="text-2xl font-bold font-mono text-[#111827] mt-1">
-                  {finishedStock?.lots_count || 4}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* 4x2 Label Print Modal */}

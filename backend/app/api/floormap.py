@@ -17,23 +17,30 @@ def get_floor_layout(db: Session = Depends(get_db)):
             ProductionJob.completed_at == None
         ).order_by(ProductionJob.id.desc()).first()
 
+        effective_status = "breakdown" if m.status == "breakdown" else ("running" if active_job else "idle")
+
+        job_info = {
+            "job_id": active_job.id,
+            "order_number": active_job.order.order_number if (active_job and active_job.order) else None,
+            "fabric_type": active_job.order.fabric_type if (active_job and active_job.order) else None,
+            "colour": active_job.order.colour if (active_job and active_job.order) else None,
+            "operator_name": active_job.operator.name if (active_job and active_job.operator) else None,
+            "shift": active_job.shift if active_job else None,
+            "produced_m": round(active_job.output_today_m, 1) if active_job else 0.0,
+            "output_today_m": round(active_job.output_today_m, 1) if active_job else 0.0,
+            "progress_pct": round(active_job.progress_pct, 1) if active_job else 0.0
+        } if active_job else None
+
         results.append({
             "id": m.id,
             "name": m.name,
             "stage": m.stage,
-            "status": m.status,
+            "status": effective_status,
             "x": m.floor_x,
             "y": m.floor_y,
             "capacity_m_per_hour": m.capacity_m_per_hour,
-            "active_job": {
-                "order_number": active_job.order.order_number if (active_job and active_job.order) else None,
-                "fabric_type": active_job.order.fabric_type if (active_job and active_job.order) else None,
-                "colour": active_job.order.colour if (active_job and active_job.order) else None,
-                "operator_name": active_job.operator.name if (active_job and active_job.operator) else None,
-                "shift": active_job.shift if active_job else None,
-                "output_today_m": round(active_job.output_today_m, 1) if active_job else 0.0,
-                "progress_pct": round(active_job.progress_pct, 1) if active_job else 0.0
-            } if active_job else None
+            "active_job": job_info,
+            "current_job": job_info
         })
 
     return {

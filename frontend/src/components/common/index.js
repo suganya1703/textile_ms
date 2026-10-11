@@ -7,4 +7,8 @@ export { Modal } from './Modal';
 export { ToastProvider, useToast } from './Toast';
 export { EmptyState } from './EmptyState';
 export { PageHeader } from './PageHeader';
+export { Breadcrumbs } from './Breadcrumbs';
+export { ControlPanel } from './ControlPanel';
+export { ChevronStatusBar, PIPELINE_STAGES } from './ChevronStatusBar';
+export { ActivityLog } from './ActivityLog';
 export { formatINR, formatNumber } from '../../utils/formatters';

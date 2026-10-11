@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { RollLabel, PrintLabelsModal } from '../components/common/RollLabel';
+import { Breadcrumbs } from '../components/common';
 
 export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPublic = false }) {
   // Determine roll code from prop or pathname
@@ -74,7 +75,7 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F3F4F6] flex flex-col items-center justify-center p-4">
-        <div className="w-9 h-9 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mb-3" />
+        <div className="w-9 h-9 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mb-3" />
         <p className="text-sm font-medium text-gray-700">Loading Roll Passport & QR Provenance...</p>
         <p className="text-xs text-gray-400 font-mono mt-1">{currentCode}</p>
       </div>
@@ -84,11 +85,11 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
   // Friendly 404 / Error Screen
   if (error || !passportData) {
     return (
-      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between selection:bg-[#714B67] selection:text-white">
+      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between selection:bg-[#2F3E8F] selection:text-white">
         <header className="bg-white border-b border-gray-200 py-3.5 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#714B67] text-white flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#2F3E8F] text-white flex items-center justify-center">
                 <QrCode className="w-4 h-4" />
               </div>
               <div>
@@ -125,11 +126,11 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
                 placeholder="Enter roll code e.g. ROLL-20261001-0001"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="flex-1 text-xs font-mono bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-[#714B67]"
+                className="flex-1 text-xs font-mono bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-[#2F3E8F]"
               />
               <button
                 type="submit"
-                className="px-3.5 py-2 bg-[#714B67] text-white text-xs font-semibold rounded-lg hover:bg-[#5B3B52] transition-colors cursor-pointer"
+                className="px-3.5 py-2 bg-[#2F3E8F] text-white text-xs font-semibold rounded-lg hover:bg-[#232F70] transition-colors cursor-pointer"
               >
                 Search
               </button>
@@ -138,7 +139,7 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
             <div className="pt-3 border-t border-gray-100 flex items-center justify-center gap-2">
               <button
                 onClick={() => setCurrentCode('ROLL-20261001-0001')}
-                className="text-xs text-[#714B67] hover:underline font-semibold cursor-pointer"
+                className="text-xs text-[#2F3E8F] hover:underline font-semibold cursor-pointer"
               >
                 View Sample Roll (ROLL-20261001-0001)
               </button>
@@ -162,12 +163,12 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
   const dispatchStage = timeline.find((s) => s.step === 'dispatch_invoicing') || {};
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between selection:bg-[#714B67] selection:text-white">
+    <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between selection:bg-[#2F3E8F] selection:text-white">
       {/* Header Bar */}
       <header className="bg-white border-b border-gray-200 py-3.5 px-4 sm:px-6 sticky top-0 z-30 shadow-2xs no-print">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#714B67] text-white flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#2F3E8F] text-white flex items-center justify-center shrink-0">
               <QrCode className="w-4.5 h-4.5" />
             </div>
             <div>
@@ -184,7 +185,7 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsPrintModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#714B67] hover:bg-[#5B3B52] rounded-lg transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#2F3E8F] hover:bg-[#232F70] rounded-lg transition-all shadow-xs cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               Print 4×2" Label
@@ -204,6 +205,14 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: 'Quality', onClick: onBack },
+            { label: 'Roll Passport' },
+            { label: currentCode }
+          ]}
+        />
+
         {/* Printable 4x2 Label Preview Card */}
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex-1 space-y-2">
@@ -285,7 +294,7 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
                 Verifiable genealogy from raw yarn intake to warehouse invoice
               </p>
             </div>
-            <span className="text-xs font-mono text-[#714B67] bg-purple-50 px-2 py-0.5 rounded-md font-semibold">
+            <span className="text-xs font-mono text-[#2F3E8F] bg-indigo-50 px-2 py-0.5 rounded-md font-semibold">
               Rule-Based • 100% Offline
             </span>
           </div>
@@ -293,12 +302,12 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
           <div className="relative pl-6 space-y-8 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-gray-200">
             {/* Step 1: Yarn Intake */}
             <div className="relative flex items-start gap-4">
-              <div className="absolute -left-6 mt-1 w-5 h-5 rounded-full bg-[#714B67] text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-white">
+              <div className="absolute -left-6 mt-1 w-5 h-5 rounded-full bg-[#2F3E8F] text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-white">
                 1
               </div>
               <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#714B67] uppercase">
+                  <span className="text-xs font-bold text-[#2F3E8F] uppercase">
                     Yarn Batch & Raw Material Intake
                   </span>
                   <span className="font-mono text-xs text-gray-500 font-semibold">
@@ -318,12 +327,12 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
 
             {/* Step 2: Customer Order */}
             <div className="relative flex items-start gap-4">
-              <div className="absolute -left-6 mt-1 w-5 h-5 rounded-full bg-[#714B67] text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-white">
+              <div className="absolute -left-6 mt-1 w-5 h-5 rounded-full bg-[#2F3E8F] text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-white">
                 2
               </div>
               <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#714B67] uppercase">
+                  <span className="text-xs font-bold text-[#2F3E8F] uppercase">
                     Customer Order Booking
                   </span>
                   <span className="font-mono text-xs text-gray-500 font-semibold">
@@ -342,12 +351,12 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
 
             {/* Step 3: Weaving Floor */}
             <div className="relative flex items-start gap-4">
-              <div className="absolute -left-6 mt-1 w-5 h-5 rounded-full bg-[#714B67] text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-white">
+              <div className="absolute -left-6 mt-1 w-5 h-5 rounded-full bg-[#2F3E8F] text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-white">
                 3
               </div>
               <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#714B67] uppercase">
+                  <span className="text-xs font-bold text-[#2F3E8F] uppercase">
                     Loom Weaving & Machine Operation
                   </span>
                   <span className="font-mono text-xs text-gray-500 font-semibold capitalize">
@@ -392,7 +401,7 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
                     {qcStage.defects.map((d) => (
                       <div key={d.id} className="text-xs text-gray-600 flex justify-between bg-white px-2.5 py-1 rounded border border-gray-200">
                         <span className="capitalize">• {d.type.replace(/_/g, ' ')} ({d.size_in}")</span>
-                        <span className="font-mono font-bold text-[#714B67]">{d.points} pts</span>
+                        <span className="font-mono font-bold text-[#2F3E8F]">{d.points} pts</span>
                       </div>
                     ))}
                   </div>
@@ -441,7 +450,7 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
           {cost && (
             <div className="pt-4 border-t border-gray-200">
               <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3 flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-[#714B67]" />
+                <DollarSign className="w-3.5 h-3.5 text-[#2F3E8F]" />
                 Roll Production Cost Breakdown
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -459,12 +468,12 @@ export function RollPassportView({ rollNumber: initialRollNumber, onBack, isPubl
                   </span>
                   <span className="text-[10px] text-gray-400">Power, loom wear & factory rate</span>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs">
-                  <span className="text-[#714B67] font-semibold block">Total Roll Cost</span>
-                  <span className="font-black text-sm text-[#714B67] mt-0.5 block">
+                <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-xs">
+                  <span className="text-[#2F3E8F] font-semibold block">Total Roll Cost</span>
+                  <span className="font-black text-sm text-[#2F3E8F] mt-0.5 block">
                     ₹{cost.total_cost ? Number(cost.total_cost).toLocaleString('en-IN') : '0'}
                   </span>
-                  <span className="text-[10px] text-[#714B67]/70">Excluding sales tax / GST</span>
+                  <span className="text-[10px] text-[#2F3E8F]/70">Excluding sales tax / GST</span>
                 </div>
               </div>
             </div>

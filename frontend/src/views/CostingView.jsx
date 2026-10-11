@@ -52,7 +52,7 @@ export function CostingView() {
   if (loading || !costingData) {
     return (
       <div className="py-20 text-center text-[#6B7280]">
-        <div className="w-8 h-8 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="w-8 h-8 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading Order Costing...
       </div>
     );
@@ -141,7 +141,7 @@ export function CostingView() {
               <select
                 value={selectedOrderId}
                 onChange={(e) => setSelectedOrderId(e.target.value)}
-                className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] font-medium focus:outline-none focus:border-[#714B67]"
+                className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-sm text-[#111827] font-medium focus:outline-none focus:border-[#2F3E8F]"
               >
                 {orders.map((o) => (
                   <option key={o.order_id} value={o.order_id}>
@@ -179,7 +179,7 @@ export function CostingView() {
                 <span className="text-[#6B7280] font-mono">Total: {formatINR(selectedOrder.total_cost)}</span>
               </div>
               <div className="w-full h-3 rounded-full bg-gray-100 overflow-hidden flex">
-                <div style={{ width: `${yarnBarPct}%` }} className="bg-[#714B67]" title={`Yarn: ${yarnBarPct}%`} />
+                <div style={{ width: `${yarnBarPct}%` }} className="bg-[#2F3E8F]" title={`Yarn: ${yarnBarPct}%`} />
                 <div style={{ width: `${labourBarPct}%` }} className="bg-blue-500" title={`Labour: ${labourBarPct}%`} />
                 <div style={{ width: `${overheadBarPct}%` }} className="bg-amber-500" title={`Overhead: ${overheadBarPct}%`} />
                 <div style={{ width: `${wastageBarPct}%` }} className="bg-orange-500" title={`Wastage: ${wastageBarPct}%`} />
@@ -189,7 +189,7 @@ export function CostingView() {
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#6B7280] pt-1">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#714B67]" /> Yarn ({yarnBarPct}%)
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#2F3E8F]" /> Yarn ({yarnBarPct}%)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Labour ({labourBarPct}%)

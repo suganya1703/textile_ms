@@ -6,7 +6,7 @@ from datetime import datetime, date
 from backend.app.core.database import get_db
 from backend.app.models.quality import Roll
 from backend.app.models.master import Machine, Setting
-from backend.app.models.yarn_order import Order
+from backend.app.models.yarn_order import Order, ProductionJob
 from backend.app.models.dispatch_finance import Invoice, Payment
 from backend.app.models.workforce import Wage
 
@@ -19,23 +19,31 @@ def get_owner_dashboard(db: Session = Depends(get_db)):
     total_metres_produced = sum(r.length_m for r in all_rolls)
     passed_metres = sum(r.length_m for r in all_rolls if r.qc_status == 'pass')
 
-    # 2. Machine utilization
-    machines = db.query(Machine).all()
-    running_machines = sum(1 for m in machines if m.status == 'running')
-    machine_utilization_pct = round((running_machines / len(machines) * 100), 1) if machines else 0.0
-
-    # Output per machine
+    # 2. Machine utilization & status agreement
+    machines = db.query(Machine).order_by(Machine.id.asc()).all()
+    running_machines = 0
     machine_outputs = []
+
     for m in machines:
+        active_job = db.query(ProductionJob).filter(
+            ProductionJob.machine_id == m.id,
+            ProductionJob.completed_at == None
+        ).first()
+        effective_status = "breakdown" if m.status == "breakdown" else ("running" if active_job else "idle")
+        if effective_status == "running":
+            running_machines += 1
+
         rolls_for_machine = [r for r in all_rolls if r.machine_id == m.id]
         total_m = sum(r.length_m for r in rolls_for_machine)
         machine_outputs.append({
             "machine_id": m.id,
             "machine_name": m.name,
             "stage": m.stage,
-            "status": m.status,
+            "status": effective_status,
             "total_output_m": round(total_m, 1)
         })
+
+    machine_utilization_pct = round((running_machines / len(machines) * 100), 1) if machines else 0.0
 
     # 3. Financials & Invoices
     invoices = db.query(Invoice).all()

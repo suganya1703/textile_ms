@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case
 from datetime import date
 from typing import List
 
@@ -69,7 +69,7 @@ def get_root_cause_insights(db: Session = Depends(get_db)):
     shift_rolls = db.query(
         Roll.shift,
         func.count(Roll.id).label("total_rolls"),
-        func.sum(func.case((Roll.qc_status.in_(["rework", "reject"]), 1), else_=0)).label("bad_rolls")
+        func.sum(case((Roll.qc_status.in_(["rework", "reject"]), 1), else_=0)).label("bad_rolls")
     ).group_by(Roll.shift).all()
 
     shifts_dict = {}

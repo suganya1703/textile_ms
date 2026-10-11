@@ -36,9 +36,9 @@ export function Sidebar({
         />
       )}
 
-      {/* Fixed Left Sidebar Container: ~225px wide, #744B68, white text */}
+      {/* Fixed Left Sidebar Container: ~225px wide, #1E285C deep indigo, white text */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-[225px] bg-[#744B68] text-white flex flex-col transition-transform duration-200 ease-in-out md:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-[225px] bg-[#1E285C] text-white flex flex-col transition-transform duration-200 ease-in-out md:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -46,8 +46,8 @@ export function Sidebar({
         <div className="shrink-0 pt-6 pb-4 px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              {/* Spool / Thread Bobbin Icon */}
-              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+              {/* Spool / Thread Bobbin Icon with Accent Teal */}
+              <div className="w-7 h-7 rounded-lg bg-[#2BA38C] flex items-center justify-center shrink-0 shadow-xs">
                 <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 3h12" />
                   <path d="M6 21h12" />

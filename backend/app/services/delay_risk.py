@@ -53,7 +53,7 @@ def evaluate_order_delay_risk(order: Order, db: Session, simulated_today: date =
 
     # Idle machines that could assist
     idle_looms = db.query(Machine).filter(Machine.status == "idle", Machine.stage == "weaving").all()
-    idle_suggestion = f"Loom {idle_looms[0].name} is idle; allocate parallel job there." if idle_looms else "Consider scheduling overtime on next shift."
+    idle_suggestion = f"{idle_looms[0].name} is idle; allocate parallel job there." if idle_looms else "Consider scheduling overtime on next shift."
 
     if current_daily_rate >= required_daily_rate:
         status = "green"

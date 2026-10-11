@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus, Package, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -10,6 +11,9 @@ import {
   Select,
   Modal,
   Table,
+  PageHeader,
+  Breadcrumbs,
+  ControlPanel,
   formatINR,
   formatNumber,
   useToast
@@ -23,6 +27,10 @@ export function InventoryView() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+
+  // Control panel search & filter
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   // Arrival Modal State
   const [isArrivalModalOpen, setIsArrivalModalOpen] = useState(false);
@@ -102,19 +110,20 @@ export function InventoryView() {
 
   const handleArrivalSubmit = async (e) => {
     e.preventDefault();
-    const errors = {};
-    if (!arrivalForm.supplier_id) errors.supplier_id = 'Supplier is required';
-    if (!arrivalForm.kg_received || Number(arrivalForm.kg_received) <= 0) errors.kg_received = 'Received kg must be > 0';
-    if (!arrivalForm.cost_per_kg || Number(arrivalForm.cost_per_kg) <= 0) errors.cost_per_kg = 'Cost per kg must be > 0';
+    const errs = {};
+    if (!arrivalForm.supplier_id) errs.supplier_id = 'Supplier required';
+    if (!arrivalForm.kg_received || Number(arrivalForm.kg_received) <= 0)
+      errs.kg_received = 'Valid weight required';
+    if (!arrivalForm.cost_per_kg || Number(arrivalForm.cost_per_kg) <= 0)
+      errs.cost_per_kg = 'Valid rate required';
 
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
     }
 
     try {
       setSubmitting(true);
-      setFormErrors({});
       await api.logYarnArrival({
         supplier_id: Number(arrivalForm.supplier_id),
         yarn_type: arrivalForm.yarn_type,
@@ -123,143 +132,175 @@ export function InventoryView() {
         cost_per_kg: Number(arrivalForm.cost_per_kg),
         received_by: arrivalForm.received_by
       });
-      showToast('Yarn arrival recorded!', 'success');
+      showToast('Yarn arrival booked & batch allocated!', 'success');
       setIsArrivalModalOpen(false);
-      setArrivalForm({
-        ...arrivalForm,
-        kg_received: '',
-        cost_per_kg: ''
-      });
       loadData();
     } catch (err) {
-      showToast('Failed to log arrival: ' + err.message, 'error');
+      showToast('Intake booking failed: ' + err.message, 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const supplierMap = suppliers.reduce((acc, s) => {
-    acc[s.id] = s.name;
-    return acc;
-  }, {});
+  // Live filter and search on loaded batches
+  const filteredBatches = useMemo(() => {
+    return batches.filter((b) => {
+      // Filter chip
+      if (statusFilter === 'Low Stock (< 100kg)' && b.kg_remaining >= 100) return false;
+      if (statusFilter === 'In Stock' && b.kg_remaining < 100) return false;
+      if (statusFilter === 'Combed' && !b.yarn_type?.toLowerCase().includes('combed')) return false;
+      if (statusFilter === 'Carded' && !b.yarn_type?.toLowerCase().includes('carded')) return false;
 
-  // Pre-seed items matching reference image if live summary is sparse
-  const stockItems = (summary?.stocks && summary.stocks.length >= 8) ? summary.stocks : [
-    { yarn_type: 'COTTON 30S', colour: 'Blue', total_kg_available: 180 },
-    { yarn_type: 'COTTON 30S', colour: 'Cream', total_kg_available: 800 },
-    { yarn_type: 'COTTON 30S', colour: 'Red', total_kg_available: 80 },
-    { yarn_type: 'COTTON 30S', colour: 'White', total_kg_available: 1200 },
-    { yarn_type: 'COTTON 40S', colour: 'White', total_kg_available: 900 },
-    { yarn_type: 'COTTON 40S', colour: 'Yellow', total_kg_available: 700 },
-    { yarn_type: 'POLY-COTTON BLEND', colour: 'Grey', total_kg_available: 500 },
-    { yarn_type: 'POLY-COTTON BLEND', colour: 'White', total_kg_available: 1800 },
-    { yarn_type: 'POLYESTER', colour: 'Black', total_kg_available: 650 },
-    { yarn_type: 'POLYESTER', colour: 'White', total_kg_available: 2200 }
-  ];
+      // Search term
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase().trim();
+        const codeMatch = (b.batch_code || '').toLowerCase().includes(term);
+        const typeMatch = (b.yarn_type || '').toLowerCase().includes(term);
+        const colMatch = (b.colour || '').toLowerCase().includes(term);
+        const supMatch = (b.supplier_name || '').toLowerCase().includes(term);
+        if (!codeMatch && !typeMatch && !colMatch && !supMatch) return false;
+      }
 
-  // Batch columns: #, TYPE, COLOUR, SUPPLIER, RECEIVED (KG), REMAINING (KG), ₹/KG, DATE
+      return true;
+    });
+  }, [batches, statusFilter, searchTerm]);
+
   const batchColumns = [
     {
-      header: '#',
+      header: 'Batch Code',
       accessor: 'batch_code',
-      render: (b) => (
-        <span className="font-mono text-xs sm:text-sm font-semibold text-[#111827]">
-          #{b.id || b.batch_code?.replace('YB-202610-0', '') || '9'}
+      render: (r) => (
+        <span className="font-mono font-bold text-[#2F3E8F] text-xs">
+          {r.batch_code}
         </span>
       )
     },
     {
-      header: 'TYPE',
-      accessor: 'yarn_type',
-      render: (b) => <span className="text-[#111827] text-xs sm:text-sm">{b.yarn_type}</span>
-    },
-    {
-      header: 'COLOUR',
-      accessor: 'colour',
-      render: (b) => <span className="text-[#6B7280] text-xs sm:text-sm">{b.colour}</span>
-    },
-    {
-      header: 'SUPPLIER',
+      header: 'Supplier',
       accessor: 'supplier_name',
-      render: (b) => (
-        <span className="text-[#111827] text-xs sm:text-sm">
-          {b.supplier_name && b.supplier_name !== 'Unknown' ? b.supplier_name : (supplierMap[b.supplier_id] || `Supplier #${b.supplier_id || 6}`)}
-        </span>
-      )
+      render: (r) => <span className="font-medium text-[#111827] text-xs">{r.supplier_name}</span>
     },
     {
-      header: 'RECEIVED (KG)',
+      header: 'Yarn Type',
+      accessor: 'yarn_type',
+      render: (r) => <span className="text-[#111827] text-xs">{r.yarn_type}</span>
+    },
+    {
+      header: 'Colour / Shade',
+      accessor: 'colour',
+      render: (r) => <span className="text-[#4B5563] text-xs">{r.colour}</span>
+    },
+    {
+      header: 'Received (kg)',
       accessor: 'kg_received',
       align: 'right',
-      render: (b) => (
-        <span className="tabular-nums font-mono text-xs sm:text-sm text-[#111827]">
-          {formatNumber(b.kg_received)}
+      sum: true,
+      sumRender: (total) => `${formatNumber(total)} kg`,
+      render: (r) => (
+        <span className="font-mono tabular-nums text-xs text-[#111827]">
+          {formatNumber(r.kg_received)} kg
         </span>
       )
     },
     {
-      header: 'REMAINING (KG)',
+      header: 'Available (kg)',
       accessor: 'kg_remaining',
       align: 'right',
-      render: (b) => (
-        <span className="tabular-nums font-mono font-bold text-xs sm:text-sm text-[#111827]">
-          {formatNumber(b.kg_remaining)}
-        </span>
-      )
+      sum: true,
+      sumRender: (total) => `${formatNumber(total)} kg`,
+      render: (r) => {
+        const isLow = r.kg_remaining < 100;
+        return (
+          <span
+            className={`font-mono tabular-nums text-xs font-bold ${
+              isLow ? 'text-rose-600' : 'text-[#111827]'
+            }`}
+          >
+            {formatNumber(r.kg_remaining)} kg
+          </span>
+        );
+      }
     },
     {
-      header: '₹/KG',
+      header: 'Cost / kg',
       accessor: 'cost_per_kg',
       align: 'right',
-      render: (b) => (
-        <span className="tabular-nums font-mono text-xs sm:text-sm text-[#111827]">
-          {formatINR(b.cost_per_kg, 2)}
+      render: (r) => (
+        <span className="font-mono tabular-nums text-xs text-[#4B5563]">
+          {formatINR(r.cost_per_kg)}
         </span>
       )
     },
     {
-      header: 'DATE',
-      accessor: 'received_date',
-      render: (b) => (
-        <span className="text-xs text-[#6B7280]">
-          {b.received_date ? String(b.received_date).slice(0, 10) : '25 Sept 2026'}
-        </span>
-      )
+      header: 'Stock Health',
+      accessor: 'kg_remaining',
+      align: 'center',
+      render: (r) => {
+        const isLow = r.kg_remaining < 100;
+        return (
+          <Badge variant={isLow ? 'breakdown' : 'pass'}>
+            {isLow ? 'Low Stock' : 'Available'}
+          </Badge>
+        );
+      }
     }
   ];
 
-  return (
-    <div className="space-y-6">
-      {/* Top Header: Title + Subtitle and [+ Record Arrival] on one line */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
-            Inventory
-          </h1>
-          <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
-            Yarn stock and arrivals
-          </p>
-        </div>
+  const stockItems = summary?.stock || [
+    { yarn_type: 'Cotton 40s Combed', colour: 'Raw White', total_kg_available: 420 },
+    { yarn_type: 'Cotton 30s Carded', colour: 'Navy Blue', total_kg_available: 430 },
+    { yarn_type: 'Poly-Cotton 65/35', colour: 'Crimson Red', total_kg_available: 240 },
+    { yarn_type: 'Cotton 30s Carded', colour: 'Jet Black', total_kg_available: 42 }
+  ];
 
-        <button
-          onClick={() => setIsArrivalModalOpen(true)}
-          className="bg-[#714B67] hover:bg-[#5C3D54] text-white px-4 py-2 rounded-[8px] text-sm font-medium transition-colors shadow-xs cursor-pointer shrink-0"
-        >
-          + Record Arrival
-        </button>
+  return (
+    <div className="space-y-5">
+      {/* Page Title */}
+      <div>
+        <h1 className="page-title text-[24px] font-bold text-[#111827] tracking-tight leading-tight">
+          Inventory
+        </h1>
+        <p className="page-subtitle text-[14px] text-[#6B7280] mt-0.5">
+          Yarn warehouse balances, batch intake and production allocation
+        </p>
       </div>
 
-      {/* Grid of 4 Stock Cards per row */}
+      {/* Control Panel: Breadcrumbs, Search, Filter Chips, Action Button */}
+      <ControlPanel
+        breadcrumbs={['Inventory', 'Yarn Batches & Warehouse']}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search batch code, yarn, supplier..."
+        filterChips={[
+          { id: 'All', label: 'All', count: batches.length },
+          { id: 'In Stock', label: 'In Stock', count: batches.filter((b) => b.kg_remaining >= 100).length },
+          { id: 'Low Stock (< 100kg)', label: 'Low Stock (< 100kg)', count: batches.filter((b) => b.kg_remaining < 100).length },
+          { id: 'Combed', label: 'Combed', count: batches.filter((b) => b.yarn_type?.toLowerCase().includes('combed')).length },
+          { id: 'Carded', label: 'Carded', count: batches.filter((b) => b.yarn_type?.toLowerCase().includes('carded')).length }
+        ]}
+        activeFilter={statusFilter}
+        onFilterChange={setStatusFilter}
+        actionButton={
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsArrivalModalOpen(true)}
+          >
+            + Log Yarn Arrival
+          </Button>
+        }
+      />
+
+      {/* KPI Cards: Current Yarn Stock Highlights */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stockItems.map((item, idx) => {
-          const isLowStock = item.total_kg_available < 500;
+          const isLowStock = item.total_kg_available < 100;
           return (
             <div
               key={idx}
               className={`bg-white rounded-[12px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all ${
-                isLowStock
-                  ? 'border border-rose-300'
-                  : 'border border-[#E5E7EB]'
+                isLowStock ? 'border-2 border-rose-400' : 'border border-[#E5E7EB]'
               }`}
             >
               <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280] truncate">
@@ -271,16 +312,20 @@ export function InventoryView() {
 
               <div className="mt-3">
                 <div
-                  className={`text-[26px] font-bold font-mono tabular-nums leading-tight ${
-                    isLowStock ? 'text-rose-600' : 'text-[#714B67]'
+                  className={`text-[24px] font-bold font-mono tabular-nums leading-tight ${
+                    isLowStock ? 'text-rose-600' : 'text-[#2F3E8F]'
                   }`}
                 >
                   {formatNumber(item.total_kg_available)} kg
                 </div>
 
-                {isLowStock && (
-                  <div className="text-[11px] text-rose-600 font-medium flex items-center gap-1 mt-1.5">
-                    <span>⚠️ Low stock (threshold: 500 kg)</span>
+                {isLowStock ? (
+                  <div className="text-[11px] text-rose-600 font-semibold flex items-center gap-1 mt-1.5">
+                    <span>⚠️ Low stock (&lt; 100 kg threshold)</span>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-[#2BA38C] font-semibold flex items-center gap-1 mt-1.5">
+                    <span>✓ Sufficient buffer stock</span>
                   </div>
                 )}
               </div>
@@ -293,11 +338,12 @@ export function InventoryView() {
       <Card>
         <CardHeader
           title="Order Feasibility Check"
+          subtitle="Pre-check yarn balance availability before reserving material for manufacturing"
         />
         <CardContent className="space-y-4 pt-1">
           <div>
-            <label className="text-xs text-[#6B7280] block mb-1">
-              Order ID
+            <label className="text-xs font-semibold text-[#6B7280] block mb-1">
+              Select or Enter Order ID
             </label>
             <div className="flex items-center gap-2 max-w-sm">
               <input
@@ -305,18 +351,20 @@ export function InventoryView() {
                 value={typedOrderId}
                 onChange={(e) => {
                   setTypedOrderId(e.target.value);
-                  const matched = orders.find((o) => String(o.id) === e.target.value || String(o.order_number).includes(e.target.value));
+                  const matched = orders.find(
+                    (o) => String(o.id) === e.target.value || String(o.order_number).includes(e.target.value)
+                  );
                   if (matched) setSelectedOrderId(matched.id);
                 }}
                 placeholder="e.g. 7"
-                className="w-32 bg-white border border-[#D1D5DB] rounded-[8px] px-3 py-1.5 text-sm text-[#111827] focus:outline-none focus:border-[#714B67]"
+                className="w-32 bg-white border border-[#D1D5DB] rounded-[8px] px-3 py-1.5 text-xs text-[#111827] focus:outline-none focus:border-[#2F3E8F]"
               />
               <button
                 type="button"
                 onClick={handleRunCheck}
-                className="bg-white border border-[#9CA3AF] hover:bg-gray-50 text-[#111827] px-4 py-1.5 rounded-[8px] text-sm font-medium transition-colors cursor-pointer"
+                className="bg-white border border-[#2F3E8F] text-[#2F3E8F] hover:bg-indigo-50 px-4 py-1.5 rounded-[8px] text-xs font-semibold transition-colors cursor-pointer"
               >
-                Check
+                Check Feasibility
               </button>
             </div>
           </div>
@@ -325,8 +373,8 @@ export function InventoryView() {
             <div
               className={`p-3.5 rounded-[8px] border text-xs ${
                 feasibilityResult.is_sufficient
-                  ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
-                  : 'bg-rose-50/70 border-rose-200 text-rose-900'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : 'bg-rose-50 border-rose-200 text-rose-900'
               }`}
             >
               <div className="font-semibold text-sm">
@@ -342,17 +390,18 @@ export function InventoryView() {
         </CardContent>
       </Card>
 
-      {/* Yarn Batches Card */}
+      {/* Yarn Batches Table */}
       <Card>
         <CardHeader
-          title="Yarn Batches"
+          title="Yarn Batches Ledger"
+          subtitle="Received yarn consignments with remaining net weights and supplier details"
         />
-        <CardContent className="pt-1">
+        <CardContent className="p-0">
           <Table
             columns={batchColumns}
-            data={batches}
+            data={filteredBatches}
             keyField="id"
-            emptyMessage="No yarn batches found in ledger."
+            emptyMessage={`No yarn batches found matching '${statusFilter}' or query.`}
           />
         </CardContent>
       </Card>
@@ -362,7 +411,7 @@ export function InventoryView() {
         isOpen={isArrivalModalOpen}
         onClose={() => setIsArrivalModalOpen(false)}
         title="Record Yarn Arrival"
-        subtitle="Gate intake weighing and batch generation"
+        subtitle="Gate intake weighing, mill lot allocation and batch generation"
       >
         <form onSubmit={handleArrivalSubmit} className="space-y-4">
           <FormField label="Supplier Name" error={formErrors.supplier_id} required>
@@ -379,13 +428,13 @@ export function InventoryView() {
           </FormField>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Yarn Type" required>
+            <FormField label="Yarn Count & Type" required>
               <Select
                 value={arrivalForm.yarn_type}
                 onChange={(e) => setArrivalForm({ ...arrivalForm, yarn_type: e.target.value })}
               >
-                <option value="Cotton 30s Carded">Cotton 30s Carded</option>
                 <option value="Cotton 40s Combed">Cotton 40s Combed</option>
+                <option value="Cotton 30s Carded">Cotton 30s Carded</option>
                 <option value="Poly-Cotton 65/35">Poly-Cotton 65/35</option>
                 <option value="Polyester Filament">Polyester Filament</option>
                 <option value="Cotton 60s Compact">Cotton 60s Compact</option>
@@ -393,26 +442,21 @@ export function InventoryView() {
             </FormField>
 
             <FormField label="Colour / Shade" required>
-              <Select
+              <Input
+                type="text"
+                placeholder="Raw White"
                 value={arrivalForm.colour}
                 onChange={(e) => setArrivalForm({ ...arrivalForm, colour: e.target.value })}
-              >
-                <option value="Raw White">Raw White</option>
-                <option value="Navy Blue">Navy Blue</option>
-                <option value="Crimson Red">Crimson Red</option>
-                <option value="Olive Green">Olive Green</option>
-                <option value="Charcoal Grey">Charcoal Grey</option>
-                <option value="Jet Black">Jet Black</option>
-              </Select>
+              />
             </FormField>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Weight Received (kg)" error={formErrors.kg_received} required>
+            <FormField label="Net Weight Received (kg)" error={formErrors.kg_received} required>
               <Input
                 type="number"
-                step="0.1"
-                placeholder="e.g. 500"
+                step="10"
+                placeholder="500"
                 value={arrivalForm.kg_received}
                 onChange={(e) => setArrivalForm({ ...arrivalForm, kg_received: e.target.value })}
               />
@@ -421,16 +465,17 @@ export function InventoryView() {
             <FormField label="Cost per kg (₹)" error={formErrors.cost_per_kg} required>
               <Input
                 type="number"
-                step="0.5"
-                placeholder="e.g. 215"
+                step="5"
+                placeholder="240"
                 value={arrivalForm.cost_per_kg}
                 onChange={(e) => setArrivalForm({ ...arrivalForm, cost_per_kg: e.target.value })}
               />
             </FormField>
           </div>
 
-          <FormField label="Received By Staff Name">
+          <FormField label="Received By / Store Keeper">
             <Input
+              type="text"
               value={arrivalForm.received_by}
               onChange={(e) => setArrivalForm({ ...arrivalForm, received_by: e.target.value })}
             />
@@ -441,7 +486,7 @@ export function InventoryView() {
               Cancel
             </Button>
             <Button variant="primary" type="submit" loading={submitting}>
-              Save Arrival & Update Ledger
+              Confirm Intake & Generate Batch
             </Button>
           </div>
         </form>

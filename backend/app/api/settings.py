@@ -161,3 +161,19 @@ def get_odoo_export(export_type: str, db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@router.post("/reset-demo-data")
+def reset_demo_data():
+    """
+    Resets the entire database by re-running the seed script to restore
+    all baseline operational data and planted demo stories.
+    """
+    from backend.app.db.seed import seed
+    try:
+        seed()
+        return {
+            "status": "success",
+            "message": "Demo data restored successfully with all baseline scenarios."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reset demo data: {str(e)}")

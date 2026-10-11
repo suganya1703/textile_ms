@@ -49,7 +49,7 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
   if (loading || !floorData) {
     return (
       <div className="py-20 text-center text-[#6B7280]">
-        <div className="w-8 h-8 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="w-8 h-8 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading Mill Floor Map...
       </div>
     );
@@ -87,7 +87,7 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
       bg = 'bg-amber-500 hover:bg-amber-600';
     }
 
-    const ring = isSelected ? 'ring-2 ring-[#714B67] ring-offset-2' : '';
+    const ring = isSelected ? 'ring-2 ring-[#2F3E8F] ring-offset-2' : '';
     return `${bg} ${ring} p-3 rounded-[8px] text-left transition-all cursor-pointer shadow-xs`;
   };
 
@@ -132,7 +132,7 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
           <button
             type="button"
             onClick={() => setIsScannerOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#714B67] hover:bg-[#5B3B52] rounded-lg transition-colors shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#2F3E8F] hover:bg-[#232F70] rounded-lg transition-colors shadow-xs cursor-pointer"
           >
             <Camera className="w-3.5 h-3.5" />
             Scan QR
@@ -147,7 +147,7 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
       {/* Quick Roll Code / QR Scanner Bar */}
       <div className="p-3.5 bg-white rounded-[12px] border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 text-[#714B67] flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 text-[#2F3E8F] flex items-center justify-center shrink-0">
             <QrCode className="w-4 h-4" />
           </div>
           <div>
@@ -171,19 +171,19 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
             value={quickRollCode}
             onChange={(e) => setQuickRollCode(e.target.value)}
             placeholder="e.g. ROLL-20261001-0001"
-            className="flex-1 sm:w-60 font-mono text-xs bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3 py-1.5 text-[#111827] focus:outline-none focus:border-[#714B67]"
+            className="flex-1 sm:w-60 font-mono text-xs bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] px-3 py-1.5 text-[#111827] focus:outline-none focus:border-[#2F3E8F]"
           />
           <button
             type="button"
             onClick={() => setIsScannerOpen(true)}
-            className="px-2.5 py-1.5 text-xs font-semibold text-[#714B67] bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-[8px] transition-colors cursor-pointer shrink-0"
+            className="px-2.5 py-1.5 text-xs font-semibold text-[#2F3E8F] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-[8px] transition-colors cursor-pointer shrink-0"
           >
             Camera
           </button>
           <button
             type="submit"
             disabled={!quickRollCode.trim()}
-            className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#714B67] hover:bg-[#5B3B52] disabled:opacity-50 rounded-[8px] transition-colors cursor-pointer shrink-0"
+            className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#2F3E8F] hover:bg-[#232F70] disabled:opacity-50 rounded-[8px] transition-colors cursor-pointer shrink-0"
           >
             Open
           </button>
@@ -289,8 +289,8 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
                   </div>
 
                   {selectedMachine.effectiveStatus === 'running' && selectedMachine.current_job ? (
-                    <div className="p-3 bg-purple-50/50 rounded-[8px] border border-purple-100 space-y-2">
-                      <div className="font-semibold text-[#714B67] text-sm">
+                    <div className="p-3 bg-indigo-50/50 rounded-[8px] border border-indigo-100 space-y-2">
+                      <div className="font-semibold text-[#2F3E8F] text-sm">
                         Active Job #{selectedMachine.current_job.job_id}
                       </div>
                       <div className="flex justify-between">
@@ -305,7 +305,7 @@ export function FloorMapView({ onNavigate, onOpenRollPassport }) {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#6B7280]">Progress:</span>
-                        <span className="font-mono font-bold text-[#714B67]">
+                        <span className="font-mono font-bold text-[#2F3E8F]">
                           {Math.round(selectedMachine.current_job.progress_pct || 0)}%
                         </span>
                       </div>

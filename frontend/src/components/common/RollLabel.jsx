@@ -115,7 +115,7 @@ export function PrintLabelsModal({ isOpen, onClose, rolls = [], baseUrl = 'http:
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-gray-200 shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#714B67] text-white flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#2F3E8F] text-white flex items-center justify-center">
                 <Tag className="w-4 h-4" />
               </div>
               <div>
@@ -153,7 +153,7 @@ export function PrintLabelsModal({ isOpen, onClose, rolls = [], baseUrl = 'http:
           {/* Footer Actions */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200 shrink-0">
             <span className="text-xs text-gray-500">
-              QR links encode <code className="font-mono text-[#714B67]">{baseUrl}/passport/...</code>
+              QR links encode <code className="font-mono text-[#2F3E8F]">{baseUrl}/passport/...</code>
             </span>
             <div className="flex items-center gap-3">
               <button
@@ -166,7 +166,7 @@ export function PrintLabelsModal({ isOpen, onClose, rolls = [], baseUrl = 'http:
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#714B67] hover:bg-[#5B3B52] rounded-xl shadow-xs transition-all cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#2F3E8F] hover:bg-[#232F70] rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 Print {rolls.length > 1 ? `All ${rolls.length} Labels` : 'Label'}

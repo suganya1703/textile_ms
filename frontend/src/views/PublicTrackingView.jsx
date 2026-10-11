@@ -252,7 +252,7 @@ export function PublicTrackingView({ initialOrderNumber = 'ORD-2026-001', onBack
                         isCompleted
                           ? 'bg-emerald-50/50 border-emerald-200 text-emerald-950'
                           : isActive
-                          ? 'bg-purple-50 border-loomdo-primary text-loomdo-primary-deep shadow-xs ring-1 ring-loomdo-primary/30'
+                          ? 'bg-indigo-50 border-loomdo-primary text-loomdo-primary-deep shadow-xs ring-1 ring-loomdo-primary/30'
                           : 'bg-slate-50/50 border-slate-200 text-slate-400'
                       }`}
                     >
@@ -311,7 +311,7 @@ export function PublicTrackingView({ initialOrderNumber = 'ORD-2026-001', onBack
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-400">
         <p>
-          Loomdo Unified Textile Manufacturing Platform • Built for Odoo x NMIT Hackathon 2026 • 100% Offline & Explainable
+          Loomdo Unified Textile Manufacturing Platform • Enterprise Traceability Engine • 100% Offline & Explainable
         </p>
       </footer>
     </div>

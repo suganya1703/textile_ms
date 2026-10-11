@@ -226,11 +226,11 @@ export function ProductionView() {
           )}
         </div>
 
-        {/* Progress bar in purple, '% done' left and 'm today' right */}
+        {/* Progress bar in deep indigo, '% done' left and 'm today' right */}
         <div>
           <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-1.5">
             <div
-              className="h-full bg-[#714B67] transition-all duration-300"
+              className="h-full bg-[#2F3E8F] transition-all duration-300"
               style={{ width: `${progressPct}%` }}
             />
           </div>

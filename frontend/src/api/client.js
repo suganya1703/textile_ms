@@ -110,6 +110,7 @@ export const api = {
   getSettings: () => apiRequest('/settings'),
   getLanIp: () => apiRequest('/settings/lan-ip'),
   updateSettings: (payload) => apiRequest('/settings', { method: 'PUT', body: JSON.stringify(payload) }),
+  resetDemoData: () => apiRequest('/settings/reset-demo-data', { method: 'POST' }),
   getAuditTrail: (entity = '') => apiRequest(`/settings/audit-trail${entity ? '?entity=' + entity : ''}`),
   getShiftHandoverReport: () => apiRequest('/settings/shift-handover-report'),
   downloadOdooExport: (type) => apiRequest(`/settings/odoo-export/${type}`),

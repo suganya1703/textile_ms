@@ -41,25 +41,29 @@ export function formatStatus(status) {
 }
 
 const VARIANTS = {
-  // Created: grey
-  created: 'bg-gray-100 text-gray-700 border-gray-200',
+  // Created: neutral slate/gray
+  created: 'bg-slate-100 text-slate-700 border-slate-200',
   neutral: 'bg-gray-100 text-gray-700 border-gray-200',
 
-  // Yarn Reserved: teal
-  'yarn reserved': 'bg-teal-50 text-teal-700 border-teal-200',
-  yarn_reserved: 'bg-teal-50 text-teal-700 border-teal-200',
-  teal: 'bg-teal-50 text-teal-700 border-teal-200',
+  // Yarn Reserved: teal accent (#2BA38C)
+  'yarn reserved': 'bg-teal-50 text-[#1F7D6B] border-teal-200',
+  yarn_reserved: 'bg-teal-50 text-[#1F7D6B] border-teal-200',
+  teal: 'bg-teal-50 text-[#1F7D6B] border-teal-200',
+  accent: 'bg-teal-50 text-[#1F7D6B] border-teal-200',
 
-  // Spinning: purple
-  spinning: 'bg-purple-50 text-purple-700 border-purple-200',
-  purple: 'bg-purple-50 text-purple-700 border-purple-200',
+  // Primary: deep indigo (#2F3E8F)
+  primary: 'bg-[#EEF2FF] text-[#2F3E8F] border-[#C7D2FE]',
+  indigo: 'bg-[#EEF2FF] text-[#2F3E8F] border-[#C7D2FE]',
+
+  // Spinning: light indigo
+  spinning: 'bg-indigo-50 text-indigo-700 border-indigo-200',
 
   // Weaving/Dyeing: blue
   weaving: 'bg-blue-50 text-blue-700 border-blue-200',
-  dyeing: 'bg-blue-50 text-blue-700 border-blue-200',
+  dyeing: 'bg-sky-50 text-sky-700 border-sky-200',
   blue: 'bg-blue-50 text-blue-700 border-blue-200',
 
-  // QC / Pending: yellow
+  // QC / Pending: amber/yellow
   qc: 'bg-amber-50 text-amber-700 border-amber-200',
   'quality check': 'bg-amber-50 text-amber-700 border-amber-200',
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -67,7 +71,7 @@ const VARIANTS = {
   yellow: 'bg-amber-50 text-amber-700 border-amber-200',
   warning: 'bg-amber-50 text-amber-700 border-amber-200',
 
-  // Ready / Dispatched / Passed / Running: green
+  // Ready / Dispatched / Passed / Running: emerald
   ready: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   'ready to dispatch': 'bg-emerald-50 text-emerald-700 border-emerald-200',
   'ready for dispatch': 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -87,7 +91,7 @@ const VARIANTS = {
   'grade b': 'bg-amber-50 text-amber-700 border-amber-200',
   'grade-b': 'bg-amber-50 text-amber-700 border-amber-200',
 
-  // Breakdown / Rejected: red
+  // Breakdown / Rejected: rose/red
   breakdown: 'bg-rose-50 text-rose-700 border-rose-200',
   reject: 'bg-rose-50 text-rose-700 border-rose-200',
   rejected: 'bg-rose-50 text-rose-700 border-rose-200',

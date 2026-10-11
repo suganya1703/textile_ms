@@ -149,7 +149,7 @@ export function RollScannerModal({ isOpen, onClose, onSelectRoll }) {
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#714B67] text-white flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#2F3E8F] text-white flex items-center justify-center">
               <QrCode className="w-4 h-4" />
             </div>
             <div>
@@ -183,7 +183,7 @@ export function RollScannerModal({ isOpen, onClose, onSelectRoll }) {
                 muted
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 border-2 border-dashed border-[#714B67]/70 m-8 rounded pointer-events-none animate-pulse" />
+              <div className="absolute inset-0 border-2 border-dashed border-[#2F3E8F]/70 m-8 rounded pointer-events-none animate-pulse" />
               <button
                 type="button"
                 onClick={stopCamera}
@@ -197,14 +197,14 @@ export function RollScannerModal({ isOpen, onClose, onSelectRoll }) {
               <button
                 type="button"
                 onClick={handleStartCamera}
-                className="flex items-center gap-2 px-4 py-2 bg-[#714B67] text-white text-xs font-bold rounded-xl hover:bg-[#5B3B52] transition-colors cursor-pointer shadow-xs"
+                className="flex items-center gap-2 px-4 py-2 bg-[#2F3E8F] text-white text-xs font-bold rounded-xl hover:bg-[#232F70] transition-colors cursor-pointer shadow-xs"
               >
                 <Camera className="w-4 h-4" />
                 Scan via Camera
               </button>
               <div className="mt-2 text-[11px] text-gray-500 flex items-center gap-1">
                 <span>Or upload QR photo:</span>
-                <label className="text-[#714B67] font-semibold underline cursor-pointer hover:text-[#5B3B52]">
+                <label className="text-[#2F3E8F] font-semibold underline cursor-pointer hover:text-[#232F70]">
                   Select Image
                   <input
                     type="file"
@@ -243,12 +243,12 @@ export function RollScannerModal({ isOpen, onClose, onSelectRoll }) {
               value={typedCode}
               onChange={(e) => setTypedCode(e.target.value)}
               placeholder="e.g. ROLL-20261001-0001 or 26"
-              className="flex-1 font-mono uppercase bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#714B67]"
+              className="flex-1 font-mono uppercase bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#2F3E8F]"
             />
             <button
               type="submit"
               disabled={!typedCode.trim()}
-              className="px-4 py-2 bg-[#714B67] disabled:bg-gray-300 text-white text-xs font-bold rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-[#2F3E8F] disabled:bg-gray-300 text-white text-xs font-bold rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
             >
               Go <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -267,7 +267,7 @@ export function RollScannerModal({ isOpen, onClose, onSelectRoll }) {
                   key={r.id}
                   type="button"
                   onClick={() => handleQuickPick(r.roll_number)}
-                  className="font-mono text-[10.5px] px-2 py-1 bg-purple-50 text-[#714B67] hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors cursor-pointer"
+                  className="font-mono text-[10.5px] px-2 py-1 bg-indigo-50 text-[#2F3E8F] hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors cursor-pointer"
                 >
                   {r.roll_number?.replace('ROLL-20261001-00', '#') || `#${r.id}`}
                 </button>

@@ -47,7 +47,7 @@ export function DashboardView({ onNavigate }) {
   if (loading || !data) {
     return (
       <div className="py-20 text-center text-[#6B7280]">
-        <div className="w-8 h-8 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="w-8 h-8 border-4 border-[#2F3E8F] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading Owner Dashboard...
       </div>
     );
@@ -88,7 +88,7 @@ export function DashboardView({ onNavigate }) {
       header: 'ORDER',
       accessor: 'order_number',
       render: (o) => (
-        <span className="font-mono font-bold text-[#714B67] text-[14px]">
+        <span className="font-mono font-bold text-[#2F3E8F] text-[14px]">
           #{o.order_number}
         </span>
       )
@@ -258,7 +258,7 @@ export function DashboardView({ onNavigate }) {
             <div className="kpi-label text-[11px] font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
               WAGES PAID
             </div>
-            <div className="kpi-value text-[22px] font-bold text-[#714B67] tabular-nums whitespace-nowrap leading-tight mt-0.5">
+            <div className="kpi-value text-[22px] font-bold text-[#2F3E8F] tabular-nums whitespace-nowrap leading-tight mt-0.5">
               {formatINR(wagesPaid, 0)}
             </div>
           </div>

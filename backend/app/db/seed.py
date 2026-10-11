@@ -79,10 +79,13 @@ def seed():
     # 4. Machines (12)
     # Story: Loom W-04 is in breakdown!
     # Story: Loom W-03 is running but will produce 3x defects!
+    # Machines with active jobs: Loom W-01, W-02, W-03, Dye Vat D-01 (running)
+    # Breakdown: Loom W-04 (breakdown)
+    # Machines without active jobs: SP-01, SP-02, SP-03, Loom W-05, Dye Vat D-02, D-03, Perch Table P-01 (idle)
     machines = [
         # Spinning Shed
-        Machine(name="SP-01 (Ring Frame A)", stage="spinning", status="running", capacity_m_per_hour=35.0, floor_x=60, floor_y=80),
-        Machine(name="SP-02 (Ring Frame B)", stage="spinning", status="running", capacity_m_per_hour=35.0, floor_x=60, floor_y=180),
+        Machine(name="SP-01 (Ring Frame A)", stage="spinning", status="idle", capacity_m_per_hour=35.0, floor_x=60, floor_y=80),
+        Machine(name="SP-02 (Ring Frame B)", stage="spinning", status="idle", capacity_m_per_hour=35.0, floor_x=60, floor_y=180),
         Machine(name="SP-03 (Open End Rotor)", stage="spinning", status="idle", capacity_m_per_hour=45.0, floor_x=60, floor_y=280),
         # Weaving Shed
         Machine(name="Loom W-01 (Airjet)", stage="weaving", status="running", capacity_m_per_hour=28.0, floor_x=370, floor_y=80),
@@ -92,9 +95,9 @@ def seed():
         Machine(name="Loom W-05 (Projectile)", stage="weaving", status="idle", capacity_m_per_hour=24.0, floor_x=530, floor_y=180), # Idle loom for suggestion
         # Dye House
         Machine(name="Dye Vat D-01 (Soft Flow)", stage="dyeing", status="running", capacity_m_per_hour=50.0, floor_x=810, floor_y=80),
-        Machine(name="Dye Vat D-02 (Jigger Vat)", stage="dyeing", status="running", capacity_m_per_hour=40.0, floor_x=810, floor_y=180),
+        Machine(name="Dye Vat D-02 (Jigger Vat)", stage="dyeing", status="idle", capacity_m_per_hour=40.0, floor_x=810, floor_y=180),
         Machine(name="Dye Vat D-03 (Winch Dyer)", stage="dyeing", status="idle", capacity_m_per_hour=35.0, floor_x=810, floor_y=280),
-        Machine(name="Perch Table P-01 (Inspection)", stage="dyeing", status="running", capacity_m_per_hour=60.0, floor_x=930, floor_y=180)
+        Machine(name="Perch Table P-01 (Inspection)", stage="dyeing", status="idle", capacity_m_per_hour=60.0, floor_x=930, floor_y=180)
     ]
     db.add_all(machines)
     db.commit()
@@ -156,8 +159,8 @@ def seed():
         Order(order_number="ORD-2026-006", buyer_id=2, fabric_type="Poplin 40s Premium", colour="Navy Blue", quantity_m=750.0, deadline=today + timedelta(days=6), price_per_m=140.0, status="Ready", yarn_required_kg=165.0, expected_delivery=today + timedelta(days=4)),
         # ORD-7: Yarn reserved
         Order(order_number="ORD-2026-007", buyer_id=5, fabric_type="Cambric 60s", colour="Raw White", quantity_m=650.0, deadline=today + timedelta(days=12), price_per_m=155.0, status="Yarn reserved", yarn_required_kg=143.0, expected_delivery=today + timedelta(days=10)),
-        # ORD-8: Story 8: LOSS-MAKING ORDER (Sold at low price ₹85/m while yarn+labour costs ₹98/m)
-        Order(order_number="ORD-2026-008", buyer_id=8, fabric_type="Coarse Sheeting 20s", colour="Raw White", quantity_m=1500.0, deadline=today + timedelta(days=10), price_per_m=82.0, status="Weaving", yarn_required_kg=375.0, expected_delivery=today + timedelta(days=9)),
+        # ORD-8: Story 8: LOSS-MAKING ORDER (Sold at price ₹78/m while unit cost is ₹85.1/m -> ~9.2% loss)
+        Order(order_number="ORD-2026-008", buyer_id=8, fabric_type="Coarse Sheeting 20s", colour="Raw White", quantity_m=1500.0, deadline=today + timedelta(days=10), price_per_m=78.0, status="Weaving", yarn_required_kg=375.0, expected_delivery=today + timedelta(days=9)),
     ]
     db.add_all(orders)
     db.commit()
@@ -376,8 +379,8 @@ def seed():
     db.commit()
 
     # 11. Dispatches & Invoices (Paid, Partially Paid, and Completely Unpaid)
-    # Dispatch 1: 10 rolls to Meridian Apparel (Fully Paid)
-    dispatched_rolls_1 = rolls[:10]
+    # Dispatch 1: 12 rolls to Meridian Apparel (Fully Paid)
+    dispatched_rolls_1 = rolls[:12]
     for r in dispatched_rolls_1:
         r.dispatched = True
     total_dsp_m1 = sum(r.length_m for r in dispatched_rolls_1)
@@ -421,12 +424,12 @@ def seed():
     )
     db.add(payment_1)
 
-    # Dispatch 2: 6 rolls to Kaveri Fashions (Partially Paid)
-    dispatched_rolls_2 = rolls[10:16]
+    # Dispatch 2: 8 rolls to Kaveri Fashions (Partially Paid)
+    dispatched_rolls_2 = rolls[12:20]
     for r in dispatched_rolls_2:
         r.dispatched = True
     total_dsp_m2 = sum(r.length_m for r in dispatched_rolls_2)
-    subtotal_inv2 = total_dsp_m2 * 115.0
+    subtotal_inv2 = total_dsp_m2 * 135.0
     tax_inv2 = subtotal_inv2 * 0.05
     total_inv2 = subtotal_inv2 + tax_inv2
 
@@ -457,22 +460,22 @@ def seed():
     db.add(invoice_2)
     db.flush()
 
-    # Partial payment of ₹40,000 against invoice_2
+    # Partial payment of ₹50,000 against invoice_2
     payment_2 = Payment(
         buyer_id=2,
         invoice_id=invoice_2.id,
-        amount=40000.0,
+        amount=50000.0,
         paid_at=datetime.utcnow() - timedelta(days=1),
         method="neft"
     )
     db.add(payment_2)
 
     # Dispatch 3: 6 rolls to Southern Weave Exports (Completely Unpaid)
-    dispatched_rolls_3 = rolls[16:22]
+    dispatched_rolls_3 = rolls[20:26]
     for r in dispatched_rolls_3:
         r.dispatched = True
     total_dsp_m3 = sum(r.length_m for r in dispatched_rolls_3)
-    subtotal_inv3 = total_dsp_m3 * 115.0
+    subtotal_inv3 = total_dsp_m3 * 140.0
     tax_inv3 = subtotal_inv3 * 0.05
     total_inv3 = subtotal_inv3 + tax_inv3
 

@@ -1,10 +1,11 @@
 import React from 'react';
 
 const VARIANTS = {
-  primary: 'bg-[#714B67] hover:bg-[#5C3D54] active:bg-[#4A3144] text-white shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
-  secondary: 'bg-white hover:bg-[#FAF5F9] border border-[#714B67] text-[#714B67] shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
-  outline: 'bg-transparent hover:bg-[#FAF5F9] border border-[#714B67] text-[#714B67] disabled:opacity-50 disabled:cursor-not-allowed',
-  teal: 'bg-[#714B67] hover:bg-[#5C3D54] text-white font-medium shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
+  primary: 'bg-[#2F3E8F] hover:bg-[#232F70] active:bg-[#1A2355] text-white shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
+  secondary: 'bg-white hover:bg-[#EEF2FF] border border-[#2F3E8F] text-[#2F3E8F] shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
+  outline: 'bg-transparent hover:bg-[#EEF2FF] border border-[#2F3E8F] text-[#2F3E8F] disabled:opacity-50 disabled:cursor-not-allowed',
+  accent: 'bg-[#2BA38C] hover:bg-[#228370] active:bg-[#1B6758] text-white font-medium shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
+  teal: 'bg-[#2BA38C] hover:bg-[#228370] active:bg-[#1B6758] text-white font-medium shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
   danger: 'bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white shadow-xs disabled:opacity-50 disabled:cursor-not-allowed',
   ghost: 'bg-transparent hover:bg-gray-100 text-[#6B7280] hover:text-[#111827] disabled:opacity-50 disabled:cursor-not-allowed'
 };

@@ -35,11 +35,11 @@ export function LoginLandingView({
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] text-[#111827] flex flex-col justify-between selection:bg-[#714B67] selection:text-white font-sans">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#111827] flex flex-col justify-between selection:bg-[#2F3E8F] selection:text-white font-sans">
       {/* Top Navbar */}
       <header className="bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[8px] bg-[#714B67] flex items-center justify-center">
+          <div className="w-9 h-9 rounded-[8px] bg-[#2F3E8F] flex items-center justify-center">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 3h12" />
               <path d="M6 21h12" />
@@ -65,7 +65,7 @@ export function LoginLandingView({
           {onOpenPublicTracking && (
             <button
               onClick={onOpenPublicTracking}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#714B67] bg-[#714B67]/10 hover:bg-[#714B67]/20 rounded-[8px] transition-colors border border-[#714B67]/20"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2F3E8F] bg-[#2F3E8F]/10 hover:bg-[#2F3E8F]/20 rounded-[8px] transition-colors border border-[#2F3E8F]/20"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Buyer Tracking
@@ -89,16 +89,16 @@ export function LoginLandingView({
           
           {/* Left Column: Brand, Tagline & Overview */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 border border-purple-200 text-[#714B67]">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 border border-indigo-200 text-[#2F3E8F]">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Odoo x NMIT Hackathon 2026 Edition
+              Everest Textile Mills • Enterprise ERP
             </div>
 
             <div className="space-y-2">
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#111827] leading-tight">
                 Loomdo
               </h1>
-              <p className="text-xl sm:text-2xl text-[#714B67] font-bold tracking-tight">
+              <p className="text-xl sm:text-2xl text-[#2F3E8F] font-bold tracking-tight">
                 “Every roll, traced from yarn to invoice.”
               </p>
               <p className="text-base text-[#6B7280] leading-relaxed pt-2">
@@ -109,7 +109,7 @@ export function LoginLandingView({
             {/* Feature Highlights Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="p-4 bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex items-start gap-3">
-                <div className="p-2 rounded-[8px] bg-purple-50 text-[#714B67] shrink-0">
+                <div className="p-2 rounded-[8px] bg-indigo-50 text-[#2F3E8F] shrink-0">
                   <Layers className="w-4 h-4" />
                 </div>
                 <div>
@@ -139,7 +139,7 @@ export function LoginLandingView({
               </div>
 
               <div className="p-4 bg-white rounded-[12px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex items-start gap-3">
-                <div className="p-2 rounded-[8px] bg-purple-50 text-[#714B67] shrink-0">
+                <div className="p-2 rounded-[8px] bg-indigo-50 text-[#2F3E8F] shrink-0">
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
@@ -178,14 +178,14 @@ export function LoginLandingView({
                         onClick={() => handleSelectRole(role)}
                         className={`p-3 rounded-[8px] text-left border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-purple-50 border-[#714B67] text-[#714B67] ring-1 ring-[#714B67]'
+                            ? 'bg-indigo-50 border-[#2F3E8F] text-[#2F3E8F] ring-1 ring-[#2F3E8F]'
                             : 'bg-[#F9FAFB] border-[#E5E7EB] text-[#4B5563] hover:bg-gray-100'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className="font-bold text-xs">{role.title}</span>
                           <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                            isSelected ? 'bg-[#714B67] text-white' : 'bg-gray-200 text-[#4B5563]'
+                            isSelected ? 'bg-[#2F3E8F] text-white' : 'bg-gray-200 text-[#4B5563]'
                           }`}>
                             {role.id}
                           </span>
@@ -213,7 +213,7 @@ export function LoginLandingView({
                         type="text"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] pl-9 pr-3 py-2 text-xs font-mono text-[#111827] focus:outline-none focus:border-[#714B67]"
+                        className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] pl-9 pr-3 py-2 text-xs font-mono text-[#111827] focus:outline-none focus:border-[#2F3E8F]"
                         required
                       />
                     </div>
@@ -229,25 +229,25 @@ export function LoginLandingView({
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] pl-9 pr-3 py-2 text-xs font-mono text-[#111827] focus:outline-none focus:border-[#714B67]"
+                        className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-[8px] pl-9 pr-3 py-2 text-xs font-mono text-[#111827] focus:outline-none focus:border-[#2F3E8F]"
                         required
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="p-3 bg-purple-50/50 rounded-[8px] border border-purple-100 flex items-center justify-between text-xs">
+                <div className="p-3 bg-indigo-50/50 rounded-[8px] border border-indigo-100 flex items-center justify-between text-xs">
                   <span className="text-[#6B7280]">
                     Signing in as <strong className="text-[#111827]">{selectedRole.title}</strong>
                   </span>
-                  <span className="font-semibold text-[#714B67]">
+                  <span className="font-semibold text-[#2F3E8F]">
                     {selectedRole.modules.length} Modules Allowed
                   </span>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-sm bg-[#714B67] hover:bg-[#5C3D54] text-white transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-sm bg-[#2F3E8F] hover:bg-[#232F70] text-white transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 >
                   <span>Launch Console as {selectedRole.title}</span>
                   <ArrowRight className="w-4 h-4" />

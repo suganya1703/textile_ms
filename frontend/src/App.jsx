@@ -189,8 +189,13 @@ function AppContent() {
       {activeTab === 'workforce' && <WorkforceView />}
       {activeTab === 'costing' && <CostingView />}
       {activeTab === 'insights' && <InsightsView />}
-      {activeTab === 'floormap' && <FloorMapView onNavigate={setActiveTab} onOpenRollPassport={handleOpenPassport} />}
-      {activeTab === 'settings' && <SettingsView />}
+      {activeTab === 'settings' && (
+        <SettingsView
+          onNavigate={setActiveTab}
+          onOpenRollPassport={handleOpenPassport}
+          currentUser={currentUser}
+        />
+      )}
     </AppLayout>
   );
 }

@@ -28,6 +28,8 @@ def get_machines_status(db: Session = Depends(get_db)):
             ProductionJob.completed_at == None
         ).order_by(ProductionJob.id.desc()).first()
 
+        effective_status = "breakdown" if m.status == "breakdown" else ("running" if active_job else "idle")
+
         job_info = None
         if active_job:
             order = active_job.order
@@ -41,6 +43,7 @@ def get_machines_status(db: Session = Depends(get_db)):
                 "stage": active_job.stage,
                 "progress_pct": round(active_job.progress_pct, 1),
                 "output_today_m": round(active_job.output_today_m, 1),
+                "produced_m": round(active_job.output_today_m, 1),
                 "shift": active_job.shift,
                 "operator_name": operator.name if operator else "Unassigned",
                 "started_at": active_job.started_at.isoformat() if active_job.started_at else None
@@ -50,7 +53,7 @@ def get_machines_status(db: Session = Depends(get_db)):
             "id": m.id,
             "name": m.name,
             "stage": m.stage,
-            "status": m.status,
+            "status": effective_status,
             "capacity_m_per_hour": m.capacity_m_per_hour,
             "floor_x": m.floor_x,
             "floor_y": m.floor_y,
