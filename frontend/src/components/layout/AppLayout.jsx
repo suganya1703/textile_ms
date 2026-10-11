@@ -12,8 +12,8 @@ export function AppLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex font-sans">
-      {/* Fixed Left Sidebar (~225px) */}
+    <div className="min-h-screen bg-[#F5F7FB] flex font-sans text-[#475569]">
+      {/* Fixed Left Sidebar (230px) */}
       <Sidebar
         activeTab={activeTab}
         onSelectTab={onSelectTab}
@@ -24,24 +24,31 @@ export function AppLayout({
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 md:pl-[225px]">
-        {/* Mobile-only header (hidden on desktop to match reference UI) */}
-        <header className="h-12 bg-white border-b border-[#E5E7EB] md:hidden px-4 flex items-center justify-between sticky top-0 z-30">
+      <div className="flex-1 flex flex-col min-w-0 md:pl-[230px]">
+        {/* Mobile-only header with hamburger button */}
+        <header className="h-14 bg-white border-b border-[#E5E9F2] md:hidden px-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="p-1.5 text-gray-700 hover:text-gray-900 rounded-lg"
+            className="p-2 text-[#0F172A] hover:bg-[#E8EBF7] rounded-[10px] transition-colors"
             aria-label="Open Navigation"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="text-sm font-semibold text-gray-800">
-            Everest Textile Mills
-          </span>
-          <div className="w-5" />
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-[#0F172A]">
+              Everest Textile Mills
+            </span>
+            {currentUser?.title && (
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#E8EBF7] text-[#2F3E8F]">
+                {currentUser.title}
+              </span>
+            )}
+          </div>
+          <div className="w-6" />
         </header>
 
-        {/* Page Content Body directly on #F3F4F6 background */}
-        <main className="flex-1 p-6 sm:p-8 max-w-[1400px] w-full">
+        {/* Page Content Body on #F5F7FB background */}
+        <main className="flex-1 p-5 sm:p-7 lg:p-8 max-w-[1440px] w-full mx-auto">
           {children}
         </main>
       </div>

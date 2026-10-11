@@ -1,18 +1,31 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import {
+  X,
+  LayoutDashboard,
+  Package,
+  Factory,
+  ShieldCheck,
+  ClipboardList,
+  Truck,
+  Users,
+  Coins,
+  Lightbulb,
+  Map,
+  Settings
+} from 'lucide-react';
 
 export const ALL_MODULES = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'inventory', label: 'Inventory', icon: '🧶' },
-  { id: 'production', label: 'Production', icon: '🏭' },
-  { id: 'quality', label: 'Quality', icon: '🔍' },
-  { id: 'orders', label: 'Orders', icon: '📋' },
-  { id: 'dispatch', label: 'Dispatch', icon: '🚚' },
-  { id: 'workforce', label: 'Workforce', icon: '👷' },
-  { id: 'costing', label: 'Costing', icon: '💰' },
-  { id: 'insights', label: 'Insights', icon: '💡' },
-  { id: 'floormap', label: 'Floor Map', icon: '🗺️' },
-  { id: 'settings', label: 'Settings', icon: '⚙️' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'inventory', label: 'Inventory', icon: Package },
+  { id: 'production', label: 'Production', icon: Factory },
+  { id: 'quality', label: 'Quality', icon: ShieldCheck },
+  { id: 'orders', label: 'Orders', icon: ClipboardList },
+  { id: 'dispatch', label: 'Dispatch', icon: Truck },
+  { id: 'workforce', label: 'Workforce', icon: Users },
+  { id: 'costing', label: 'Costing', icon: Coins },
+  { id: 'insights', label: 'Insights', icon: Lightbulb },
+  { id: 'floormap', label: 'Floor Map', icon: Map },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export function Sidebar({
@@ -32,23 +45,23 @@ export function Sidebar({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
         />
       )}
 
-      {/* Fixed Left Sidebar Container: ~225px wide, #744B68, white text */}
+      {/* Fixed Left Sidebar Container: 230px wide, #1E2A5E dark indigo */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-[225px] bg-[#744B68] text-white flex flex-col transition-transform duration-200 ease-in-out md:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-[230px] bg-[#1E2A5E] text-white flex flex-col transition-transform duration-200 ease-in-out md:translate-x-0 border-r border-[#172049] ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Top Logo Section: Spool + Loomdo + Everest Textile Mills */}
-        <div className="shrink-0 pt-6 pb-4 px-4">
+        {/* Top Logo Section */}
+        <div className="shrink-0 pt-6 pb-4 px-4 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               {/* Spool / Thread Bobbin Icon */}
-              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-8 h-8 rounded-[10px] bg-[#2BA38C] flex items-center justify-center shrink-0 shadow-sm">
+                <svg className="w-4.5 h-4.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 3h12" />
                   <path d="M6 21h12" />
                   <path d="M8 3v18" />
@@ -59,10 +72,10 @@ export function Sidebar({
                 </svg>
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-[17px] text-white leading-tight tracking-tight">
+                <div className="font-bold text-[18px] text-white leading-tight tracking-tight">
                   Loomdo
                 </div>
-                <div className="text-[11px] text-white/70 font-normal truncate">
+                <div className="text-[11px] text-white/70 font-medium truncate">
                   Everest Textile Mills
                 </div>
               </div>
@@ -78,9 +91,10 @@ export function Sidebar({
         </div>
 
         {/* Scrollable Navigation Menu */}
-        <div className="flex-1 min-h-0 overflow-y-auto py-2 px-2.5 space-y-0.5">
+        <div className="flex-1 min-h-0 overflow-y-auto py-3 px-3 space-y-1">
           {visibleModules.map((item) => {
             const isActive = activeTab === item.id;
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
@@ -88,29 +102,27 @@ export function Sidebar({
                   onSelectTab(item.id);
                   if (onClose) onClose();
                 }}
-                className={`w-full h-[40px] flex items-center gap-2.5 px-3 rounded-xl text-[14px] transition-all text-left cursor-pointer ${
+                className={`w-full h-10 flex items-center gap-3 px-3 rounded-[10px] text-[13.5px] transition-all text-left cursor-pointer relative ${
                   isActive
-                    ? 'bg-white/20 text-white font-medium shadow-xs'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white font-normal'
+                    ? 'bg-[#2F3E8F] text-white font-semibold shadow-xs before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3.5px] before:bg-[#2BA38C] before:rounded-r'
+                    : 'text-white/85 hover:bg-[#172049] hover:text-white font-medium'
                 }`}
               >
-                <span className="text-[15px] leading-none shrink-0" role="img" aria-label={item.label}>
-                  {item.icon}
-                </span>
+                <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-[#2BA38C]' : 'text-white/70'}`} />
                 <span className="truncate">{item.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Fixed Bottom Row: user (bold), role (small), "Sign out" on right */}
-        <div className="shrink-0 p-4 pt-3 border-t border-white/10">
+        {/* Fixed Bottom User Row */}
+        <div className="shrink-0 p-4 border-t border-white/10 bg-[#172049]/60">
           <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs font-bold text-white leading-tight">
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-white leading-tight truncate">
                 {currentUser?.id || 'owner'}
               </div>
-              <div className="text-[11px] text-white/70">
+              <div className="text-[11px] text-white/70 truncate">
                 {currentUser?.title || 'Owner'}
               </div>
             </div>
@@ -118,7 +130,7 @@ export function Sidebar({
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="text-xs text-white/70 hover:text-white transition-colors cursor-pointer"
+                className="text-xs font-medium text-white/80 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded hover:bg-white/10"
               >
                 Sign out
               </button>
