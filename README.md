@@ -1,216 +1,257 @@
-# Loomdo
+# Loomdo: Textile Mill Management System
 
-**Every roll, traced from yarn to invoice.**
+Loomdo is a local-first mill management system for **Everest Textile Mills**, built for the **Odoo x NMIT Bangalore Hackathon 2026** (problem statement: Textile Manufacturing System). It is designed to work alongside an ERP like Odoo, not imitate it.
 
-Loomdo is a unified textile manufacturing platform that replaces notebooks, paper slips, floor walks, phone calls and registers with one connected system. It is built for the **Odoo x NMIT Bangalore Hackathon 2026** (Problem Statement: Textile Manufacturing System) and is designed to complement an ERP such as Odoo, not imitate it.
-
-The demo client is **Everest Textile Mills**, a mill that buys yarn, processes it through spinning, weaving and dyeing, inspects the fabric, and sells finished rolls to buyers. Everest is seed data; Loomdo is the product.
+**Screenshots:** add images of the Dashboard, Production Board, Quality, Dispatch, Roll Passport and Buyer Tracking pages in `docs/screenshots/` and link them here.
 
 ---
 
+## 1. The problem
 
-## Team
+Everest Textile Mills runs on notebooks and phone calls:
 
-| Name | Role |
+| Today | Result |
 |---|---|
-| Suganya Subramaniam | Team Leader |
-| Brindha P | Team Member |
-| Deepika SM | Team Member |
+| Raw material stock in a notebook | Nobody knows real stock or gets a low-stock warning |
+| Machine and order status by walking the floor | Machines sit idle, orders get delayed |
+| Quality checks on paper slips | Defects cannot be traced to a machine or yarn batch |
+| Order updates for buyers over phone calls | Someone walks to the floor and calls back later |
+| Attendance and wages in a register | Nobody knows the real cost of a single roll |
+
+Loomdo gives the mill one system where every step is entered once and flows into stock, quality, buyer updates and the owner's report.
 
 ---
 
-## The problem
+## 2. What Loomdo does
 
-Today the mill tracks raw material in a notebook, checks machine status by walking the floor, records quality on paper slips, gives buyers updates over phone calls, and marks attendance in a register. Orders get delayed, machines sit idle, and nobody knows the real cost of a single roll of fabric.
-
-## Our solution
-
-One database, one chain of data:
-
-**Supplier -> Yarn batch -> Order -> Machine -> Roll -> Quality check -> Dispatch -> Invoice -> Cost**
-
-An action in one module updates the others. For example, dispatching a roll reduces finished stock, a QC result changes order progress, and wages feed into the cost of an order.
-
----
-
-## Modules (one per scene in the problem statement)
-
-| # | Module | What it does |
+| Mill scene | Module | What you get |
 |---|---|---|
-| 1 | **Inventory** | Log yarn arrivals, live stock by type and colour, low-stock warnings, and a "can we start this order?" check |
-| 2 | **Production board** | One card per machine with status, current order, progress and output today; list of idle machines |
-| 3 | **Quality control** | Log defects per roll, four-point grading (Grade A / B / Reject), pending queue, roll traceability |
-| 4 | **Order tracking** | Public page where a buyer enters an order ID and sees its stage and expected delivery |
-| 5 | **Dispatch and invoice** | Dispatch only QC-passed, undispatched rolls, dye-lot warning, matching invoice, no double dispatch |
-| 6 | **Owner dashboard** | Cost per order, output per machine, wages, payments received vs due, monthly profit and loss |
-
-### Differentiating features
-
-- **Roll Passport**: a QR code per roll that opens the roll's full journey
-- **Live machine feed**: a simulator updates machine status and output; the board polls every 5 seconds
-- **Dye-lot guard** at dispatch
-- **Four-point fabric grading** with configurable thresholds
-- **Yield and wastage tracking**, delay-risk engine, order feasibility simulator
-- **Defect root-cause insights**, floor map, audit trail
-- **Odoo CSV export** (column names are kept in one config file so they can be matched to Odoo's import templates)
-
-> Note: update this list to match what is actually built before final submission.
+| Yarn arrives at the gate | Inventory | Log arrivals (supplier, type, colour, kg, cost/kg, linked order), live stock, low-stock warnings, and a "Can we start this order?" check that states the exact shortfall in kg |
+| The floor, mid-shift | Production | One card per machine (status, order, stage, progress, output today, operator), idle and breakdown lists, job assignment, live refresh every 5 seconds, and an SVG Floor Map |
+| Checking fabric | Quality | Four-point grading (ASTM D5430) with Grade A / B / Reject, pending / pass / rework / reject lists, full roll traceability |
+| Buyer asks about an order | Orders and Tracking | Public tracking page with a stage timeline and expected delivery, English and Tamil, and a copyable status message |
+| Loading the truck | Dispatch | Only QC-passed, undispatched rolls, a dye-lot guard, an invoice that matches the selected rolls, finished stock derived from rolls |
+| Attendance and wages | Workforce | Attendance, job assignments and wages generated from attendance and hours (never typed), with overtime |
+| Owner closes the books | Dashboard and Costing | Cost per order (yarn, labour, overhead, wastage), P&L, wages, payments received versus due, loss-making order alerts, wage reconciliation |
+| Mill-floor intelligence | Insights | Defect root-cause statements, yield and wastage, delay-risk per order, order feasibility and profit simulator |
 
 ---
 
-## Tech stack
+## 3. Highlights
 
-| Layer | Technology |
+- **Roll Passport (QR):** scanning a roll's QR opens its full journey: supplier, yarn batch, order, machine, operator and shift, defects and grade, dispatch and invoice.
+- **Delay-risk engine:** compares the required daily output with the current rate and shows green / amber / red with the reason, e.g. "needs 40 m/day, currently 22 m/day", plus a suggested action.
+- **Audit trail:** every change to stock, QC results, dispatch and payments is logged (who, what, before, after, when).
+- **Machine safety:** a repaired machine never keeps the old job.
+- **Safe public pages:** they never expose costs, margins or wages, return the same generic message for any wrong input, and rate-limit repeated failures.
+- **Odoo export:** CSV files for Odoo users.
+
+---
+
+## 4. Roles
+
+| Role | Access |
 |---|---|
-| Backend | Python, FastAPI, Pydantic |
-| ORM and database | SQLAlchemy, SQLite (local file) |
-| Frontend | React (Vite), Tailwind CSS |
-| Charts | Recharts (bundled via npm); heatmap and floor map in SVG/CSS |
-| QR codes | Local library (works offline) |
-| Testing | pytest |
-| Version control | Git and GitHub |
-
-Everything runs **offline**: no CDN links, no external APIs, no AI or cloud services. The logic is rule-based and explainable.
+| Owner | Everything, including costing, dashboard, settings and the demo reset |
+| Store | Inventory and dispatch |
+| Floor | Production, floor map and operator mode |
+| QC | Quality inspection |
+| Public (no login) | Buyer order tracking and Roll Passport (read-only) |
 
 ---
 
-## Project structure
+## 5. How data flows
 
-```
-loomdo/
-  backend/        FastAPI app, models, routers, seed script, tests
-  frontend/       React (Vite) app
-  docs/           requirements.md, design.md, tasks.md and module notes
-  README.md
-```
+**Inputs**
 
-> Adjust folder names above if your structure differs.
+| Who | Input | Where |
+|---|---|---|
+| Store | Yarn arrivals: supplier, type, colour, kg, cost/kg | Inventory |
+| Office | New orders: buyer, fabric, colour, quantity, deadline, price | Orders |
+| Floor supervisor | Job assignment, machine status, progress, output | Production |
+| Machine feed (simulated) | Status and metres produced, every few seconds | Simulator |
+| QC inspector | Defect type and size per roll | Quality |
+| Dispatch clerk | Buyer, QC-passed rolls, vehicle number | Dispatch |
+| Supervisor | Attendance | Workforce |
+| Owner | Payments, other expenses, thresholds | Dashboard, Settings |
+
+**Outputs**
+
+| Output | Audience |
+|---|---|
+| Live stock, low-stock warnings, "can we start this order" | Store |
+| Machine cards and floor map | Floor |
+| Pending / pass / rework / reject lists, roll traceability | QC |
+| Order status page and copyable status message | Buyer |
+| Finished stock and invoices | Warehouse |
+| P&L, cost per order, machine output, wages, loss alerts | Owner |
+| Root-cause insights and delay-risk | Management |
+| Odoo CSV files | Odoo users |
+
+Yarn (in kg) is processed into fabric (in metres).
+
+**API:** REST, with auto-generated docs at http://localhost:8000/docs. All screens read live data from the API. The only static data is the seed script.
 
 ---
 
-## Getting started
+## 6. Setup
 
-### Prerequisites
-
-- Python 3.10 or newer
-- Node.js 18 or newer and npm
-- Git
-
-### 1. Clone the repository
+**Prerequisites:** Python 3.10+, Node.js 18+, Git.
 
 ```bash
-git clone <repository-url>
-cd loomdo
-```
+# 1. Clone
+git clone https://github.com/suganya1703/textile_ms.git
+cd textile_ms
 
-### 2. Backend setup
-
-```bash
+# 2. Backend
 cd backend
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+# Windows: venv\Scripts\activate    macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
-python seed.py                  # creates the SQLite database and loads demo data
+cp .env.example .env        # then set SECRET_KEY (see Security)
+# Create tables and load demo data (adjust the command if your seed entry point differs)
+python -m app.db.seed
 uvicorn app.main:app --reload --port 8000
-```
 
-- API runs at `http://localhost:8000`
-- Interactive API docs at `http://localhost:8000/docs`
-
-> Replace `app.main:app` with the actual entry point if it differs.
-
-### 3. Frontend setup
-
-Open a second terminal:
-
-```bash
+# 3. Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-- App runs at `http://localhost:5173`
+Open http://localhost:5173. Everything works with the internet turned off after `npm install` and `pip install`.
 
-### 4. (Optional) Start the live machine feed simulator
+### Demo accounts
 
-```bash
-cd backend
-python simulator.py
-```
-
-> Replace with the actual script name if it differs.
-
-### Reset the demo data
-
-```bash
-cd backend
-python reset.py
-```
-
-> Wipes the database and reseeds it. Replace with the actual script name if it differs.
-
----
-
-## Demo login
-
-If login is enabled, demo users are created by the seed script.
-
-| Role | Username | Password |
+| Role | Email | Password |
 |---|---|---|
-| Owner | owner | (set in seed script) |
-| Supervisor | supervisor | (set in seed script) |
-| Inspector | inspector | (set in seed script) |
+| Owner | _fill in_ | _fill in_ |
+| Store | _fill in_ | _fill in_ |
+| Floor | _fill in_ | _fill in_ |
+| QC | _fill in_ | _fill in_ |
 
-The buyer tracking page and Roll Passport page are public.
+### Resetting the demo
+
+Settings has a **Reset demo data** button (owner only) that re-runs the seed and restores the planted story.
+
+### Testing the Roll Passport QR from a phone
+
+1. Connect the phone and the laptop to the same WiFi.
+2. In Settings, set `public_base_url` to the laptop's network address, e.g. `http://192.168.1.20:5173`.
+3. Open a roll in Quality, show its QR code, and scan it with the phone's camera.
+
+A dispatch with two clashing dye lots triggers the dye-lot guard.
 
 ---
 
-## Validation rules
+## 7. Project structure
 
-Enforced in both the backend and the frontend:
+```text
+textile_ms/
+├── backend/
+│   ├── app/
+│   │   ├── api/         # FastAPI routers (inventory, production, quality, orders, dispatch, ...)
+│   │   ├── core/        # config, database, Odoo export config
+│   │   ├── db/          # schema creation and seed script
+│   │   ├── models/      # SQLAlchemy models
+│   │   ├── schemas/     # Pydantic schemas
+│   │   └── services/    # grading, wages, delay risk, simulator, Odoo export
+│   └── tests/
+├── frontend/
+│   └── src/
+│       ├── api/         # API client
+│       ├── auth/        # roles
+│       ├── components/  # shared UI components
+│       └── views/       # one view per module
+└── docs/                # requirements, design, tasks, module notes
+```
 
-- Quantities, weights, lengths and amounts must be greater than 0
+---
+
+## 8. Data model (summary)
+
+- **Master data:** Supplier, Buyer, Machine (stage, status, capacity, floor position), Worker, Setting
+- **Yarn and orders:** YarnBatch, Order, ProductionJob, YarnConsumption, yarn damage and supplier claim records
+- **Rolls and quality:** Roll (linked to order, machine, yarn batch, job, dye lot), Defect
+- **Dispatch and money:** Dispatch, Invoice, Payment, Expense
+- **Labour:** Attendance, JobAssignment, Wage (generated from attendance and job hours)
+- **System:** User, AuditLog
+
+Finished stock is not a separate table; it is derived from rolls.
+
+---
+
+## 9. Design decisions
+
+- **Why local-first:** the production board must keep working if the mill's internet drops.
+- **Data:** demo data is synthetic, generated by the seed script (`backend/app/db/seed.py`).
+- **Wages:** generated, never typed: regular hours times the hourly rate, plus overtime hours times the rate and the overtime multiplier.
+- **Dispatch safety:** dispatch runs in a single database transaction. The selected rolls are locked, `qc_status = 'pass'` and `dispatched = false` are re-verified, the rolls are marked dispatched, the invoice is created and the audit entry is written. If any roll fails the check, the whole dispatch is rejected.
+
+### Validation rules
+
+- Quantities, kg, lengths and amounts must be greater than 0
 - Deadlines cannot be in the past
-- An order cannot start without enough yarn
-- Only QC-passed, undispatched rolls can be dispatched
-- A job cannot be assigned to a machine that is broken down or busy
-- A worker cannot be double-booked in a shift or paid twice
+- An order cannot start without enough yarn, and the message states the shortfall
+- Rolls that have not passed QC, or are already dispatched, cannot be dispatched
+- A broken-down or busy machine cannot be assigned a job
+- A worker cannot be double-booked in a shift, assigned while absent, or paid twice
+- Required fields, valid dates and enum values, unique invoice numbers
 
 ---
 
-## Running tests
+## 10. Security
+
+Role-based login (owner, store, floor, QC). Menus and API access depend on the role. The token-signing key comes from the `SECRET_KEY` environment variable in `.env`, which is git-ignored. `.env.example` shows the format. The only public pages are order tracking and the Roll Passport. They are read-only and expose no costs, margins or wages.
+
+---
+
+## 11. UI
+
+One colour palette, one font family (bundled locally), one reusable component set (Card, Table, Badge, Button, FormField, Modal, Toast, EmptyState, PageHeader), a left sidebar with one entry per module, and a layout that stays responsive down to about 360px.
+
+---
+
+## 12. Odoo integration
+
+The Odoo export column names live in one config file (`backend/app/core/odoo_config.py`) so they can be adjusted to Odoo's official import templates.
+
+---
+
+## 13. Tests
 
 ```bash
 cd backend
 pytest
 ```
 
----
-
-## Demo data
-
-The seed script creates Everest Textile Mills with suppliers, buyers, machines, workers, orders at every stage and a set of rolls. It plants a few situations so the dashboards have something to show: one loom with high defect points, one low-stock yarn, one delayed order, one broken-down machine and two clashing dye lots in one buyer's order.
+Tests cover the validation rules, four-point grading, wage calculation, the dispatch transaction (including concurrent double-dispatch), derived finished stock, job transfer, yarn damage, buyer tracking, and the public endpoints leaking no private fields.
 
 ---
 
-## Notes and limitations
+## 14. Limitations
 
-- The machine feed is **simulated** and is designed to be replaced by real machine counters.
-- Four-point grading thresholds are **configurable** in Settings.
-- Odoo export column names are placeholders and should be matched to Odoo's official import templates.
-
----
-
-## Contributing (team workflow)
-
-- Work on your own branch, for example `feature/backend-core`, `feature/frontend-ui`, `feature/analytics-quality`
-- Open a pull request into `main` and get it reviewed by another team member
-- Use meaningful commit messages
+- SQLite suits one mill and a handful of concurrent users.
+- Cloud sync is future scope.
+- Not yet piloted in a real mill.
 
 ---
 
-## Acknowledgements
+## 15. Future scope
 
-Built for the **Odoo x NMIT Bangalore Hackathon 2026**. Loomdo is an independent hackathon project and is not made by or affiliated with Odoo.
+- Connect real machine counters (IoT) to the production feed.
+- Buyer notifications by SMS or WhatsApp.
 
+---
 
+## 16. Team
+
+| Name | Responsibility | Branch |
+|---|---|---|
+| Suganya S | _fill in_ | _fill in_ |
+| Deepika | _fill in_ | _fill in_ |
+| Brindha | _fill in_ | _fill in_ |
+
+Contributions are visible in the commit history and pull requests of this repository.
+
+Built for the Odoo x NMIT Bangalore Hackathon 2026.
