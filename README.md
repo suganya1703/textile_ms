@@ -1,4 +1,4 @@
-# Loomdo: Textile Mill Management System
+# "Loomdo" Textile Mill Management System
 
 Loomdo is a local-first mill management system for **Everest Textile Mills**, built for the **Odoo x NMIT Bangalore Hackathon 2026** (problem statement: Textile Manufacturing System). It is designed to work alongside an ERP like Odoo, not imitate it.
 
